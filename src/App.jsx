@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import {
@@ -50,7 +50,27 @@ function PlaceholderPage({ label }) {
 }
 
 export default function App() {
-  const [activeNav, setActiveNav] = useState('tickets');
+  const [activeNav, setActiveNavState] = useState('tickets');
+
+  const setActiveNav = (nav) => {
+    window.history.pushState({ activeNav: nav }, '', window.location.pathname);
+    setActiveNavState(nav);
+  };
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (event.state && event.state.activeNav) {
+        setActiveNavState(event.state.activeNav);
+      } else {
+        setActiveNavState('tickets');
+      }
+    };
+    
+    window.history.replaceState({ activeNav: 'tickets' }, '', window.location.pathname);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);

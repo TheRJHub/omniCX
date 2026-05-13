@@ -22,6 +22,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Pagination,
+  Popover,
+  FormControl,
+  Select,
+  InputLabel,
 } from '@mui/material';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
@@ -51,6 +56,24 @@ const STATUS_CONFIG = {
     color: '#d97706',
     icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
   },
+  'pending': {
+    label: 'Pending',
+    bg: '#fef3c7',
+    color: '#d97706',
+    icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
+  },
+  'closed': {
+    label: 'Closed',
+    bg: '#dcfce7',
+    color: '#15803d',
+    icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
+  },
+  'open': {
+    label: 'Open',
+    bg: '#dbeafe',
+    color: '#1d4ed8',
+    icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
+  }
 };
 
 const TIER_CONFIG = {
@@ -87,7 +110,7 @@ const transformTicketData = (rawData) => {
     // Map communication_channel
     let agentName = 'Email Agent';
     let agentIcon = 'email';
-    
+
     if (item.communication_channel === 'voicebot' || item.communication_channel?.toLowerCase().includes('voice')) {
       agentName = 'Voice Agent';
       agentIcon = 'phone';
@@ -101,10 +124,8 @@ const transformTicketData = (rawData) => {
       agentName = item.communication_channel;
     }
 
-    // Map status
-    let status = 'in-progress';
-    if (item.ticket_status?.toLowerCase() === 'closed') status = 'ai-resolved';
-    else if (item.ticket_status?.toLowerCase() === 'pending') status = 'in-progress';
+    // Map status dynamically
+    let status = item.ticket_status || 'In Progress';
 
     // Map customer email to derive name and initials if possible
     const emailStr = item.customer_email || `customer${item.cust_id || ''}@example.com`;
@@ -114,9 +135,9 @@ const transformTicketData = (rawData) => {
 
     return {
       id: item.ticket_number || `#TKT_UNK`,
-      customer: { 
-        name: name, 
-        initials: initials, 
+      customer: {
+        name: name,
+        initials: initials,
         tier: 'Standard', // API does not provide tier
         tierType: 'standard',
         email: item.customer_email || null,
@@ -124,9 +145,9 @@ const transformTicketData = (rawData) => {
         custId: item.cust_id
       },
       subject: `Inquiry regarding ${item.communication_channel || 'service'}`, // Fallback subject
-      intent: { 
-        label: `Customer Query`, 
-        type: 'intent' 
+      intent: {
+        label: `Customer Query`,
+        type: 'intent'
       },
       agent: { name: agentName, icon: agentIcon },
       status: status,
@@ -149,8 +170,6 @@ function ActionsMenu({ onViewDetails }) {
         PaperProps={{ sx: { minWidth: 160, boxShadow: '0 4px 16px rgba(0,0,0,0.12)' } }}
       >
         <MenuItem onClick={() => { setAnchor(null); onViewDetails(); }} sx={{ fontSize: 13 }}>View Details</MenuItem>
-        <MenuItem onClick={() => setAnchor(null)} sx={{ fontSize: 13 }}>Reassign</MenuItem>
-        <MenuItem onClick={() => setAnchor(null)} sx={{ fontSize: 13 }}>Close Ticket</MenuItem>
       </Menu>
     </>
   );
@@ -159,10 +178,32 @@ function ActionsMenu({ onViewDetails }) {
 export default function TicketManagement({ onTicketClick }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => sessionStorage.getItem('ticketSearch') || '');
   const [selectedTicketDetails, setSelectedTicketDetails] = useState(null);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
+
+  // Pagination state
+  const [page, setPage] = useState(() => parseInt(sessionStorage.getItem('ticketPage')) || 1);
+  const rowsPerPage = 6;
+
+  // Filter state
+  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [agentFilter, setAgentFilter] = useState('All');
+
+  useEffect(() => {
+    sessionStorage.setItem('ticketSearch', search);
+  }, [search]);
+
+  useEffect(() => {
+    sessionStorage.setItem('ticketPage', page.toString());
+  }, [page]);
+
+  const handleSearchChange = (e) => {
+    setSearch(e.target.value);
+    setPage(1); // Reset page to 1 only when user types
+  };
 
   const handleViewDetails = async (ticketNo) => {
     setDetailsModalOpen(true);
@@ -187,7 +228,7 @@ export default function TicketManagement({ onTicketClick }) {
         const response = await fetch('http://164.52.196.197:8099/tickets');
         const data = await response.json();
         console.log("Raw API Response from /tickets:", data);
-        
+
         let ticketsArray = [];
         if (Array.isArray(data)) {
           ticketsArray = data;
@@ -205,9 +246,23 @@ export default function TicketManagement({ onTicketClick }) {
             ticketsArray = [data];
           }
         }
-        
+
         console.log("Extracted Tickets Array:", ticketsArray);
-        setTickets(transformTicketData(ticketsArray));
+        
+        const transformedTickets = transformTicketData(ticketsArray);
+        
+        // Sort tickets sequentially by ticket ID (e.g. TKT_001, TKT_002, ...)
+        transformedTickets.sort((a, b) => {
+          const numA = parseInt(a.id.replace(/\D/g, ''), 10) || 0;
+          const numB = parseInt(b.id.replace(/\D/g, ''), 10) || 0;
+          
+          if (numA !== numB) {
+             return numA - numB;
+          }
+          return a.id.localeCompare(b.id);
+        });
+
+        setTickets(transformedTickets);
       } catch (error) {
         console.error('Error fetching tickets:', error);
       } finally {
@@ -217,12 +272,26 @@ export default function TicketManagement({ onTicketClick }) {
     fetchTickets();
   }, []);
 
-  const filtered = tickets.filter(
-    (t) =>
-      t.id.toLowerCase().includes(search.toLowerCase()) ||
-      t.customer.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.subject.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = tickets.filter((t) => {
+    const term = search.toLowerCase();
+    const matchesSearch = (
+      t.id.toLowerCase().includes(term) ||
+      t.customer.name.toLowerCase().includes(term) ||
+      t.subject.toLowerCase().includes(term) ||
+      t.agent.name.toLowerCase().includes(term) ||
+      t.status.toLowerCase().includes(term) ||
+      t.intent.label.toLowerCase().includes(term) ||
+      t.customer.tier.toLowerCase().includes(term)
+    );
+    
+    const matchesStatus = statusFilter === 'All' || t.status.toLowerCase() === statusFilter.toLowerCase();
+    const matchesAgent = agentFilter === 'All' || t.agent.name.toLowerCase() === agentFilter.toLowerCase();
+
+    return matchesSearch && matchesStatus && matchesAgent;
+  });
+
+  const totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
+  const paginatedTickets = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   return (
     <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: '#f1f5f9' }}>
@@ -247,7 +316,7 @@ export default function TicketManagement({ onTicketClick }) {
         <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
           <OutlinedInput
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             placeholder="Search tickets..."
             size="small"
             startAdornment={
@@ -265,25 +334,85 @@ export default function TicketManagement({ onTicketClick }) {
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6', borderWidth: '1.5px' },
             }}
           />
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<FilterListRoundedIcon fontSize="small" />}
-            sx={{
-              borderRadius: '8px',
-              borderColor: '#e2e8f0',
-              color: '#475569',
-              fontSize: '13px',
-              fontWeight: 500,
-              bgcolor: '#f8fafc',
-              '&:hover': { bgcolor: '#f1f5f9', borderColor: '#cbd5e1' },
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Filter
-          </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={(e) => setFilterAnchorEl(e.currentTarget)}
+              startIcon={<FilterListRoundedIcon fontSize="small" />}
+              sx={{
+                borderRadius: '8px',
+                borderColor: '#e2e8f0',
+                color: '#475569',
+                fontSize: '13px',
+                fontWeight: 500,
+                bgcolor: '#f8fafc',
+                '&:hover': { bgcolor: '#f1f5f9', borderColor: '#cbd5e1' },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Filter
+            </Button>
+            
+            <Popover
+              open={Boolean(filterAnchorEl)}
+              anchorEl={filterAnchorEl}
+              onClose={() => setFilterAnchorEl(null)}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              PaperProps={{
+                sx: { mt: 1, p: 2, width: 240, borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }}>Filter Tickets</Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <FormControl size="small" fullWidth>
+                  <InputLabel sx={{ fontSize: '13px' }}>Status</InputLabel>
+                  <Select
+                    value={statusFilter}
+                    label="Status"
+                    onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                    sx={{ fontSize: '13px', borderRadius: '8px' }}
+                  >
+                    <MenuItem value="All">All Statuses</MenuItem>
+                    <MenuItem value="Open">Open</MenuItem>
+                    <MenuItem value="Pending">Pending</MenuItem>
+                    <MenuItem value="In Progress">In Progress</MenuItem>
+                    <MenuItem value="Closed">Closed</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl size="small" fullWidth>
+                  <InputLabel sx={{ fontSize: '13px' }}>Agent</InputLabel>
+                  <Select
+                    value={agentFilter}
+                    label="Agent"
+                    onChange={(e) => { setAgentFilter(e.target.value); setPage(1); }}
+                    sx={{ fontSize: '13px', borderRadius: '8px' }}
+                  >
+                    <MenuItem value="All">All Agents</MenuItem>
+                    <MenuItem value="Chat Agent">Chat Agent</MenuItem>
+                    <MenuItem value="Voice Agent">Voice Agent</MenuItem>
+                    <MenuItem value="Email Agent">Email Agent</MenuItem>
+                    <MenuItem value="Human Agent">Human Agent</MenuItem>
+                  </Select>
+                </FormControl>
+                <Button 
+                  variant="text" 
+                  size="small" 
+                  onClick={() => { setStatusFilter('All'); setAgentFilter('All'); setPage(1); }}
+                  sx={{ textTransform: 'none', fontWeight: 600, mt: 1 }}
+                >
+                  Clear Filters
+                </Button>
+              </Box>
+            </Popover>
+          </Box>
         </Box>
-      </Box>
 
       {/* Table */}
       <Box sx={{ p: { xs: 2, md: 3 }, flexGrow: 1 }}>
@@ -314,15 +443,21 @@ export default function TicketManagement({ onTicketClick }) {
                       <CircularProgress size={24} sx={{ color: '#3b82f6' }} />
                     </TableCell>
                   </TableRow>
-                ) : filtered.length === 0 ? (
+                ) : paginatedTickets.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 6, color: '#94a3b8' }}>
                       No tickets match your search.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filtered.map((ticket) => {
-                    const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG['in-progress'];
+                  paginatedTickets.map((ticket) => {
+                    const normalizedStatus = ticket.status.toLowerCase().replace(/\s+/g, '-');
+                    const statusCfg = STATUS_CONFIG[normalizedStatus] || {
+                      label: ticket.status,
+                      bg: '#f1f5f9',
+                      color: '#475569',
+                      icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
+                    };
                     const tierCfg = TIER_CONFIG[ticket.customer.tierType] || TIER_CONFIG['standard'];
 
                     return (
@@ -460,26 +595,20 @@ export default function TicketManagement({ onTicketClick }) {
             }}
           >
             <Typography sx={{ fontSize: '12px', color: '#94a3b8' }}>
-              Showing {filtered.length} of {tickets.length} tickets
+              Showing {paginatedTickets.length} of {filtered.length} tickets
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.5 }}>
-              {['1', '2', '3'].map((p) => (
-                <Button
-                  key={p}
-                  size="small"
-                  variant={p === '1' ? 'contained' : 'text'}
-                  sx={{
-                    minWidth: 28,
-                    height: 28,
-                    fontSize: '12px',
-                    borderRadius: '6px',
-                    ...(p !== '1' && { color: '#64748b' }),
-                    ...(p === '1' && { bgcolor: '#3b82f6', '&:hover': { bgcolor: '#2563eb' } }),
-                  }}
-                >
-                  {p}
-                </Button>
-              ))}
+              <Pagination
+                count={totalPages}
+                page={page}
+                onChange={(event, value) => setPage(value)}
+                color="primary"
+                shape="rounded"
+                size="small"
+                sx={{
+                  '& .MuiPaginationItem-root': { fontSize: '12px', minWidth: 28, height: 28, borderRadius: '6px' },
+                }}
+              />
             </Box>
           </Box>
         </Paper>

@@ -37,6 +37,16 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCol
   const theme = useTheme();
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
 
+  const handleLogoClick = () => {
+    if (collapsed) {
+      if (onToggleCollapse) onToggleCollapse();
+    } else {
+      sessionStorage.removeItem('ticketPage');
+      sessionStorage.removeItem('ticketSearch');
+      onNavChange('tickets');
+    }
+  };
+
   return (
     <Box
       component="nav"
@@ -75,7 +85,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCol
             cursor: 'pointer',
             '&:hover': collapsed ? { '& .logo-box': { bgcolor: '#2563eb' } } : {},
           }}
-          onClick={collapsed ? onToggleCollapse : undefined}
+          onClick={handleLogoClick}
         >
           <Box
             className="logo-box"
