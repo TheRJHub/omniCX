@@ -65,18 +65,83 @@ const transformInteractions = (data) => {
   });
 };
 
-export default function Customer360() {
+export default function Customer360({ selectedCustomer }) {
   const [activeTab, setActiveTab] = useState(0);
   const [interactions, setInteractions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(3);
+
+  const defaultCustomer = {
+    name: 'Pratik Abhang',
+    email: 'pratikabhang@gmail.com',
+    phone: '+91 9673440417',
+    custId: 'CUST_8921',
+    initials: 'PA',
+    location: 'Mumbai, India',
+    since: 'Jan 2023',
+    tier: 'GOLD'
+  };
+
+  const activeCustomer = selectedCustomer || defaultCustomer;
+
+  const customerEmail = activeCustomer.email || 'N/A';
+  const customerName = activeCustomer.name || 'N/A';
+  const customerId = activeCustomer.custId || 'N/A';
+  const customerInitials = activeCustomer.initials || 'N/A';
+  const customerPhone = activeCustomer.phone || 'N/A';
+  const customerLocation = activeCustomer.location || 'N/A';
+  const customerSince = activeCustomer.since || 'N/A';
+  const customerTier = activeCustomer.tier || 'N/A';
+
+  const [dynamicStats, setDynamicStats] = useState(QUICK_STATS);
 
   useEffect(() => {
     const fetchInteractions = async () => {
+      if (customerEmail === 'N/A') {
+        setInteractions([]);
+        return;
+      }
       setLoading(true);
       try {
-        const response = await fetch('http://164.52.196.197:8099/interactions/history?email=pratikabhang@gmail.com');
+        // Also check if phone is available and email is missing
+        const identifier = customerEmail && customerEmail !== 'N/A' 
+          ? `email=${encodeURIComponent(customerEmail)}` 
+          : `phone=${encodeURIComponent(customerPhone)}`;
+          
+        const response = await fetch(`http://164.52.196.197:8099/interactions/history?${identifier}`);
         const data = await response.json();
-        setInteractions(transformInteractions(data.interactions || data || []));
+        
+        // The API returns { sessions: [...] }
+        const interactionsArray = data.sessions || data.interactions || (Array.isArray(data) ? data : []);
+        const transformed = transformInteractions(interactionsArray);
+        setInteractions(transformed);
+        
+        const supportCount = transformed.filter(i => i.type === 'SUPPORT' || i.type.includes('AGENT_ASSIST')).length;
+        const collectCount = transformed.filter(i => i.type.includes('COLLECT')).length;
+        
+        setDynamicStats([
+          { 
+            label1: 'Total Interactions', 
+            val1: transformed.length.toString(), 
+            label2: 'Support Tickets', 
+            val2: supportCount > 0 ? `${supportCount}` : '8 (6 closed)' 
+          },
+          { 
+            label1: 'Lifetime Value', 
+            val1: '₹1,24,500', 
+            label2: 'Collections', 
+            val2: collectCount > 0 ? `${collectCount}` : '2 (1 active)' 
+          },
+          { 
+            label1: 'Satisfaction', 
+            val1: '4.2/5', 
+            icon: <StarRoundedIcon sx={{ fontSize: 16, color: '#f59e0b', ml: 0.5 }} />, 
+            label2: 'Risk Score', 
+            val2: '65 (Medium)', 
+            info: true 
+          },
+        ]);
+        
       } catch (error) {
         console.error('Failed to fetch interactions:', error);
       } finally {
@@ -84,15 +149,13 @@ export default function Customer360() {
       }
     };
     fetchInteractions();
-  }, []);
+  }, [customerEmail, customerPhone]);
 
   return (
     <Box sx={{ 
       flexGrow: 1, 
       p: { xs: 1.5, md: 3 }, 
       bgcolor: '#f8fafc', 
-      height: '100%', 
-      overflowY: 'auto',
       display: 'flex',
       flexDirection: 'column',
       gap: 3
@@ -101,9 +164,9 @@ export default function Customer360() {
         Customer 360 View
       </Typography>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={3} sx={{ flexShrink: 0, flexWrap: 'nowrap' }}>
         {/* Profile Card */}
-        <Grid item xs={12} md={4}>
+        <Grid item sx={{ flexBasis: '35%', maxWidth: '35%' }}>
           <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%' }}>
             <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
               <Avatar 
@@ -115,35 +178,37 @@ export default function Customer360() {
                   fontWeight: 700 
                 }}
               >
-                PA
+                {customerInitials}
               </Avatar>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>Pratik Abhang</Typography>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>CUST_66790</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>{customerName}</Typography>
+                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>{customerId}</Typography>
               </Box>
             </Box>
 
             <Stack spacing={1.5} sx={{ mb: 4 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <EmailRoundedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>pratikabhang@gmail.com</Typography>
+                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>{customerEmail}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <PhoneInTalkRoundedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>9673440417</Typography>
+                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>{customerPhone}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <LocationOnRoundedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>Pune, MH</Typography>
+                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>{customerLocation}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                 <CalendarTodayRoundedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>Customer Since: 2023</Typography>
+                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>
+                  {customerSince !== 'N/A' ? `Customer Since: ${customerSince}` : 'Customer Since: N/A'}
+                </Typography>
               </Box>
             </Stack>
 
             <Chip 
-              label="Gold Tier" 
+              label={customerTier !== 'N/A' ? `${customerTier} Tier` : 'N/A Tier'}
               size="small" 
               sx={{ 
                 bgcolor: '#fef3c7', 
@@ -157,11 +222,11 @@ export default function Customer360() {
         </Grid>
 
         {/* Quick Stats Card */}
-        <Grid item xs={12} md={8}>
+        <Grid item sx={{ flexBasis: '65%', maxWidth: '65%' }}>
           <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%' }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 3, color: '#0f172a' }}>Quick Stats</Typography>
             <Grid container spacing={4}>
-              {QUICK_STATS.map((stat, idx) => (
+              {dynamicStats.map((stat, idx) => (
                 <Grid item xs={4} key={idx}>
                   <Box sx={{ mb: 3 }}>
                     <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 0.5, fontWeight: 500 }}>{stat.label1}</Typography>
@@ -191,9 +256,11 @@ export default function Customer360() {
           </Paper>
         </Grid>
 
-        {/* Tabs and Timeline */}
-        <Grid item xs={12}>
-          <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid #e2e8f0', minHeight: 400, display: 'flex', flexDirection: 'column' }}>
+      </Grid>
+
+      {/* Tabs and Timeline */}
+      <Box>
+        <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
               <Tabs 
                 value={activeTab} 
@@ -215,16 +282,16 @@ export default function Customer360() {
               </Tabs>
             </Box>
 
-            <Box sx={{ p: 4, flexGrow: 1 }}>
+            <Box sx={{ p: 4 }}>
               {activeTab === 0 && (
-                <Box sx={{ maxWidth: 1000, mx: 'auto' }}>
+                <Box>
                   {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                       <CircularProgress size={32} sx={{ color: '#3b82f6' }} />
                     </Box>
                   ) : interactions.length === 0 ? (
                     <Typography sx={{ textAlign: 'center', color: '#94a3b8', py: 4 }}>No interactions found.</Typography>
-                  ) : interactions.map((item, idx) => (
+                  ) : interactions.slice(0, visibleCount).map((item, idx) => (
                     <Box key={idx} sx={{ display: 'flex', mb: 0, position: 'relative' }}>
                       {/* Timeline Line & Dot */}
                       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mr: 3 }}>
@@ -276,40 +343,59 @@ export default function Customer360() {
                             <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{item.date}</Typography>
                           </Box>
                           <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>
-                            {item.details.split('|').map((part, pIdx) => (
-                              <Box component="span" key={pIdx}>
-                                {pIdx > 0 && ' | '}
-                                {part.includes('Resolved: Yes') || part.includes('Resolved') ? (
-                                  <Box component="span" sx={{ color: '#10b981', fontWeight: 700 }}>{part}</Box>
-                                ) : (
-                                  part
-                                )}
-                              </Box>
-                            ))}
+                            {item.details.split('|').map((part, pIdx) => {
+                              const trimmedPart = part.trim();
+                              let content;
+                              if (trimmedPart.includes('Resolved: Yes') || trimmedPart === 'Resolved') {
+                                content = <Box component="span" sx={{ color: '#10b981', fontWeight: 700 }}>{trimmedPart}</Box>;
+                              } else if (trimmedPart.includes('Status: No Response')) {
+                                content = <Box component="span" sx={{ color: '#ef4444', fontWeight: 700 }}>{trimmedPart}</Box>;
+                              } else if (trimmedPart.includes('Ticket #')) {
+                                content = <Box component="span" sx={{ color: '#10b981', fontWeight: 700 }}>{trimmedPart}</Box>;
+                              } else if (trimmedPart.includes(':')) {
+                                const [key, ...rest] = trimmedPart.split(':');
+                                content = (
+                                  <Box component="span">
+                                    <Box component="span" sx={{ fontWeight: 700, color: '#0f172a' }}>{key}:</Box>
+                                    {rest.join(':')}
+                                  </Box>
+                                );
+                              } else {
+                                content = trimmedPart;
+                              }
+                              return (
+                                <Box component="span" key={pIdx}>
+                                  {pIdx > 0 && <Box component="span" sx={{ mx: 0.5, color: '#94a3b8' }}>|</Box>}
+                                  {content}
+                                </Box>
+                              );
+                            })}
                           </Typography>
                         </Paper>
                       </Box>
                     </Box>
                   ))}
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                    <Button 
-                      variant="text" 
-                      sx={{ 
-                        textTransform: 'none', 
-                        color: '#3b82f6', 
-                        fontWeight: 600,
-                        fontSize: '13px'
-                      }}
-                    >
-                      Load More...
-                    </Button>
-                  </Box>
+                  {interactions.length > visibleCount && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                      <Button 
+                        variant="text" 
+                        onClick={() => setVisibleCount(prev => prev + 5)}
+                        sx={{ 
+                          textTransform: 'none', 
+                          color: '#3b82f6', 
+                          fontWeight: 600,
+                          fontSize: '13px'
+                        }}
+                      >
+                        Load More...
+                      </Button>
+                    </Box>
+                  )}
                 </Box>
               )}
             </Box>
-          </Paper>
-        </Grid>
-      </Grid>
+        </Paper>
+      </Box>
     </Box>
   );
 }

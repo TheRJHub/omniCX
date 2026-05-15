@@ -82,12 +82,17 @@ export default function App() {
     setActiveNav('journey');
   };
 
+  const handleCustomerClick = (customer) => {
+    setSelectedCustomer(customer);
+    setActiveNav('customer360');
+  };
+
   const renderContent = () => {
     if (activeNav === 'agentic') return <AgenticOperations />;
     if (activeNav === 'performance') return <ChannelPerformance />;
-    if (activeNav === 'tickets') return <TicketManagement onTicketClick={handleTicketClick} />;
+    if (activeNav === 'tickets') return <TicketManagement onTicketClick={handleTicketClick} onCustomerClick={handleCustomerClick} />;
     if (activeNav === 'journey') return <CustomerJourney selectedCustomer={selectedCustomer} />;
-    if (activeNav === 'customer360') return <Customer360 />;
+    if (activeNav === 'customer360') return <Customer360 selectedCustomer={selectedCustomer} />;
     if (activeNav === 'orchestration') return <AgentOrchestration />;
     return <PlaceholderPage label={PAGE_LABELS[activeNav]} />;
   };
@@ -144,7 +149,7 @@ export default function App() {
             </Box>
           )}
 
-          <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0 }}>
+          <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0, display: 'flex', flexDirection: 'column' }}>
             {renderContent()}
           </Box>
         </Box>

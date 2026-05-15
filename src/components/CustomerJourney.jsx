@@ -213,51 +213,53 @@ export default function CustomerJourney({ selectedCustomer }) {
       </Paper>
       
       {/* Agent Flow Card */}
-      <Paper elevation={0} sx={{ p: 3, borderRadius: '16px', border: '1px solid #e2e8f0', mb: 3 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 4, color: '#0f172a' }}>
-          Omnichannel Agentic Flow
-        </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', position: 'relative', px: 4 }}>
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '20px',
-              left: '10%',
-              right: '10%',
-              height: '2px',
-              bgcolor: '#f1f5f9',
-              zIndex: 0,
-            }}
-          />
-          {dynamicJourney.map((step, idx) => (
-            <Box key={idx} sx={{ textAlign: 'center', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Avatar
-                sx={{
-                  bgcolor: '#fff',
-                  color: step.color,
-                  border: `2px solid ${step.color}`,
-                  width: 42,
-                  height: 42,
-                  mb: 1.5,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                }}
-              >
-                {step.icon}
-              </Avatar>
-              <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>{step.label}</Typography>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: step.status === 'Escalated' ? '#f97316' : step.status === 'Resolved' || step.status === 'Auto-Resolved' ? '#10b981' : '#64748b',
-                  fontWeight: 600,
-                }}
-              >
-                {step.status}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      </Paper>
+      {sessions.length > 0 && (
+        <Paper elevation={0} sx={{ p: 3, borderRadius: '16px', border: '1px solid #e2e8f0', mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 4, color: '#0f172a' }}>
+            Omnichannel Agentic Flow
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', position: 'relative', px: 4 }}>
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '20px',
+                left: '10%',
+                right: '10%',
+                height: '2px',
+                bgcolor: '#f1f5f9',
+                zIndex: 0,
+              }}
+            />
+            {dynamicJourney.map((step, idx) => (
+              <Box key={idx} sx={{ textAlign: 'center', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <Avatar
+                  sx={{
+                    bgcolor: '#fff',
+                    color: step.color,
+                    border: `2px solid ${step.color}`,
+                    width: 42,
+                    height: 42,
+                    mb: 1.5,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                  }}
+                >
+                  {step.icon}
+                </Avatar>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>{step.label}</Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: step.status === 'Escalated' ? '#f97316' : step.status === 'Resolved' || step.status === 'Auto-Resolved' ? '#10b981' : '#64748b',
+                    fontWeight: 600,
+                  }}
+                >
+                  {step.status}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Paper>
+      )}
       <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: 'flex-start' }}>
         {/* Left Column */}
         <Box sx={{ flex: 1, minWidth: 0 }}>

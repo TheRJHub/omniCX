@@ -28,6 +28,10 @@ import HubRoundedIcon from '@mui/icons-material/HubRounded';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import TimelineRoundedIcon from '@mui/icons-material/TimelineRounded';
+import DnsRoundedIcon from '@mui/icons-material/DnsRounded';
+import CallSplitRoundedIcon from '@mui/icons-material/CallSplitRounded';
+import AccessTimeRoundedIcon from '@mui/icons-material/AccessTimeRounded';
 
 const PERFORMANCE_DATA = [
   { process: 'Intent Classifier', executions: '24,592', latency: '142ms', success: '99.2%', confidence: '94%', color: '#3b82f6' },
@@ -67,13 +71,13 @@ function ArchitectureDiagram({ orchestrationData }) {
   }));
 
   return (
-    <Paper elevation={0} sx={{ p: 4, borderRadius: '16px', border: '1px solid #e2e8f0', bgcolor: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 6 }}>
+    <Paper elevation={0} sx={{ py: 3, px: 4, borderRadius: '16px', border: '1px solid #e2e8f0', bgcolor: '#fff', overflow: 'hidden', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
         <AccountTreeRoundedIcon sx={{ color: '#3b82f6', fontSize: 20 }} />
         <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '15px' }}>LangGraph Multi-Agent Architecture</Typography>
       </Stack>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 320, gap: 0, px: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 200, gap: 0, px: 2 }}>
         {/* Column 1: Omni-Router */}
         <Box sx={{ textAlign: 'center', width: 140, flexShrink: 0 }}>
           <Box sx={{ width: 72, height: 72, bgcolor: '#2563eb', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5, boxShadow: '0 8px 16px rgba(37,99,235,0.25)' }}>
@@ -189,7 +193,7 @@ export default function AgentOrchestration() {
   const allOperational = orchestrationData ? orchestrationData.all_agents_operational : true;
 
   return (
-    <Box sx={{ p: 4, bgcolor: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Box sx={{ p: 4, bgcolor: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>Agent Orchestration & Health</Typography>
@@ -204,22 +208,28 @@ export default function AgentOrchestration() {
       <ArchitectureDiagram orchestrationData={orchestrationData} />
 
       {/* Telemetry Section (Takes Remaining Height) */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 2fr' }, gap: 2, flexGrow: 1, minHeight: 0 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 2fr' }, gap: 2, flexShrink: 0 }}>
         {/* Left Block: Execution Trace */}
         <Box sx={{ height: '100%' }}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-              <Typography sx={{ fontWeight: 700, fontSize: '13px' }}>Parallel Execution Trace</Typography>
-            </Box>
-            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 1.5 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography sx={{ fontSize: '10px', color: '#cbd5e1' }}>0ms</Typography>
-                <Typography sx={{ fontSize: '10px', color: '#cbd5e1' }}>780ms</Typography>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a', mb: 1 }}>Parallel Execution Trace</Typography>
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 3 }}>
+                <CallSplitRoundedIcon sx={{ color: '#64748b', fontSize: 18 }} />
+                <Typography sx={{ fontSize: '14px', color: '#64748b' }}>Example email session timeframe</Typography>
+            </Stack>
+            <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 2, position: 'relative' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, ml: '120px' }}>
+                <Typography sx={{ fontSize: '12px', color: '#94a3b8' }}>0ms</Typography>
+                <Typography sx={{ fontSize: '12px', color: '#94a3b8' }}>780ms</Typography>
+              </Box>
+              <Box sx={{ position: 'absolute', top: 20, bottom: 40, left: '120px', right: 0, pointerEvents: 'none' }}>
+                  <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, borderLeft: '1px dashed #cbd5e1' }} />
+                  <Box sx={{ position: 'absolute', right: 0, top: 0, bottom: 0, borderLeft: '1px dashed #cbd5e1' }} />
               </Box>
               {TRACE_DATA.map((item, i) => (
-                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ fontSize: '11px', color: '#64748b', width: 90, flexShrink: 0 }}>{item.label}</Typography>
-                  <Box sx={{ flexGrow: 1, position: 'relative', height: 14 }}>
+                <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, position: 'relative', zIndex: 1 }}>
+                  <Typography sx={{ fontSize: '14px', color: '#0f172a', width: 120, flexShrink: 0 }}>{item.label}</Typography>
+                  <Box sx={{ flexGrow: 1, position: 'relative', height: 24 }}>
                       <Box sx={{ 
                           position: 'absolute', 
                           left: `${(item.offset / 780) * 100}%`, 
@@ -229,23 +239,23 @@ export default function AgentOrchestration() {
                           borderRadius: '4px',
                           display: 'flex',
                           alignItems: 'center',
-                          px: 0.5
+                          px: 1
                       }}>
-                          <Typography sx={{ color: '#fff', fontSize: '8px', fontWeight: 700 }}>{item.ms}ms</Typography>
+                          <Typography sx={{ color: '#fff', fontSize: '12px', fontWeight: 700 }}>{item.ms}ms</Typography>
                       </Box>
                   </Box>
                 </Box>
               ))}
-              <Divider sx={{ my: 0.5 }} />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>
-                      Total: <Box component="span" sx={{ color: '#2563eb' }}>525ms</Box>
+              <Divider sx={{ my: 1 }} />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 1, position: 'relative' }}>
+                  <Typography sx={{ fontSize: '15px', color: '#475569' }}>
+                      Total: <Box component="span" sx={{ fontWeight: 800, color: '#0f172a' }}>525ms</Box>
                   </Typography>
                   <Chip 
-                      icon={<BoltRoundedIcon sx={{ fontSize: '12px !important', color: '#10b981' }} />}
+                      icon={<BoltRoundedIcon sx={{ fontSize: '16px !important', color: '#10b981' }} />}
                       label="Saved 255ms" 
                       size="small" 
-                      sx={{ bgcolor: '#f0fdf4', color: '#16a34a', fontWeight: 700, height: 20, fontSize: '10px' }} 
+                      sx={{ bgcolor: '#dcfce7', color: '#10b981', fontWeight: 700, height: 28, fontSize: '13px', px: 1, border: 'none' }} 
                   />
               </Box>
             </Box>
@@ -255,41 +265,41 @@ export default function AgentOrchestration() {
         {/* Right Block: Performance Table */}
         <Box sx={{ height: '100%' }}>
           <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ p: 1.5, px: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
-              <Typography sx={{ fontWeight: 700, fontSize: '13px' }}>Sub-Agent Fleet Performance</Typography>
-              <Chip label="Last 1 hour" size="small" variant="outlined" sx={{ borderRadius: '4px', color: '#64748b', height: 20, fontSize: '10px' }} />
+            <Box sx={{ p: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
+              <Typography sx={{ fontWeight: 700, fontSize: '15px' }}>Sub-Agent Fleet Performance</Typography>
+              <Chip label="Last 1 hour" size="small" variant="outlined" sx={{ borderRadius: '6px', color: '#64748b', height: 24, fontSize: '12px' }} />
             </Box>
             <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
               <Table size="small" stickyHeader>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', py: 1 }}>Process</TableCell>
-                    <TableCell sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', py: 1 }}>Executions</TableCell>
-                    <TableCell sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', py: 1 }}>Avg Latency</TableCell>
-                    <TableCell sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', py: 1 }}>Success</TableCell>
-                    <TableCell sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', py: 1 }}>Confidence</TableCell>
+                    <TableCell sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b', py: 1.5 }}>Process</TableCell>
+                    <TableCell sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b', py: 1.5 }}>Executions</TableCell>
+                    <TableCell sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b', py: 1.5 }}>Avg Latency</TableCell>
+                    <TableCell sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b', py: 1.5 }}>Success</TableCell>
+                    <TableCell sx={{ fontSize: '12px', fontWeight: 700, color: '#64748b', py: 1.5 }}>Confidence</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {subAgentRows.map((row, i) => (
                     <TableRow key={i}>
-                      <TableCell sx={{ py: 1 }}>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Avatar sx={{ width: 20, height: 20, bgcolor: `${row.color}15`, color: row.color, borderRadius: '4px' }}>
-                              <HubRoundedIcon sx={{ fontSize: 12 }} />
+                      <TableCell sx={{ py: 1.5 }}>
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                          <Avatar sx={{ width: 24, height: 24, bgcolor: `${row.color}15`, color: row.color, borderRadius: '6px' }}>
+                              <HubRoundedIcon sx={{ fontSize: 14 }} />
                           </Avatar>
-                          <Typography sx={{ fontWeight: 600, fontSize: '11px', color: '#0f172a' }}>{row.process}</Typography>
+                          <Typography sx={{ fontWeight: 600, fontSize: '13px', color: '#0f172a' }}>{row.process}</Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell sx={{ fontSize: '11px', fontWeight: 500, color: '#475569', py: 1 }}>{row.executions}</TableCell>
-                      <TableCell sx={{ fontSize: '11px', fontWeight: 600, color: '#16a34a', py: 1 }}>{row.latency}</TableCell>
-                      <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: '#0f172a', py: 1 }}>{row.success}</TableCell>
-                      <TableCell sx={{ py: 1 }}>
+                      <TableCell sx={{ fontSize: '13px', fontWeight: 500, color: '#475569', py: 1.5 }}>{row.executions}</TableCell>
+                      <TableCell sx={{ fontSize: '13px', fontWeight: 600, color: '#16a34a', py: 1.5 }}>{row.latency}</TableCell>
+                      <TableCell sx={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', py: 1.5 }}>{row.success}</TableCell>
+                      <TableCell sx={{ py: 1.5 }}>
                           <Stack direction="row" spacing={1} alignItems="center">
-                              <Typography sx={{ fontSize: '11px', fontWeight: 600, color: '#64748b', width: 26 }}>{row.confidence}</Typography>
+                              <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#64748b', width: 32 }}>{row.confidence}</Typography>
                               {row.confidence !== 'N/A' && (
-                                  <Box sx={{ width: 40, height: 4, bgcolor: '#f1f5f9', borderRadius: 2 }}>
-                                      <Box sx={{ width: row.confidence, height: '100%', bgcolor: '#3b82f6', borderRadius: 2 }} />
+                                  <Box sx={{ width: 48, height: 6, bgcolor: '#f1f5f9', borderRadius: 3 }}>
+                                      <Box sx={{ width: row.confidence, height: '100%', bgcolor: '#3b82f6', borderRadius: 3 }} />
                                   </Box>
                               )}
                           </Stack>
@@ -304,115 +314,109 @@ export default function AgentOrchestration() {
       </Box>
 
       {/* Bottom Metrics Section */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 2, flexShrink: 0 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
+        {/* Top Row: Metrics & Infra */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2 }}>
         {/* Left: Agent Metrics */}
         <Box>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-                  <SpeedRoundedIcon sx={{ color: '#3b82f6', fontSize: 16 }} />
-                  <Typography sx={{ fontWeight: 700, fontSize: '13px' }}>Agent Performance Metrics</Typography>
-              </Stack>
-              <Box sx={{ mb: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>Omni-Router Agent</Typography>
-                      <Typography sx={{ color: omniMetrics.status === 'Running' ? '#16a34a' : '#f59e0b', fontSize: '10px', fontWeight: 700 }}>• {omniMetrics.status}</Typography>
-                  </Box>
-                  <Grid container spacing={1}>
-                      <Grid item xs={6}>
-                          <Typography sx={{ fontSize: '10px', color: '#64748b' }}>Active Sessions</Typography>
-                          <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>{omniMetrics.active_sessions}</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                          <Typography sx={{ fontSize: '10px', color: '#16a34a', fontWeight: 600 }}>Accuracy</Typography>
-                          <Typography sx={{ fontWeight: 700, fontSize: '12px', color: '#16a34a' }}>{omniMetrics.classification_acc_pct}%</Typography>
-                      </Grid>
-                  </Grid>
-              </Box>
-              <Divider sx={{ my: 1 }} />
-              <Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>Email Agent</Typography>
-                      <Typography sx={{ color: '#16a34a', fontSize: '10px', fontWeight: 700 }}>• Running</Typography>
-                  </Box>
-                  <Grid container spacing={1}>
-                      <Grid item xs={6}>
-                          <Typography sx={{ fontSize: '10px', color: '#64748b' }}>Avg Draft</Typography>
-                          <Typography sx={{ fontWeight: 700, fontSize: '12px' }}>2.1s</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                          <Typography sx={{ fontSize: '10px', color: '#16a34a', fontWeight: 600 }}>Resolution</Typography>
-                          <Typography sx={{ fontWeight: 700, fontSize: '12px', color: '#16a34a' }}>94.2%</Typography>
-                      </Grid>
-                  </Grid>
-              </Box>
-          </Paper>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
+                    <TimelineRoundedIcon sx={{ color: '#0052cc', fontSize: 24 }} />
+                    <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a' }}>Agent Performance Metrics</Typography>
+                </Stack>
+                <Stack spacing={2} sx={{ flexGrow: 1, justifyContent: 'center' }}>
+                    <Box sx={{ p: 2.5, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '16px', color: '#0f172a' }}>Omni-Router Agent</Typography>
+                            <Typography sx={{ color: omniMetrics.status === 'Running' ? '#10b981' : '#f59e0b', fontSize: '14px', fontWeight: 600 }}>• {omniMetrics.status}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                            <Typography sx={{ fontSize: '15px', color: '#64748b' }}>Active Sessions: <Box component="span" sx={{ fontWeight: 700, color: '#0f172a' }}>{omniMetrics.active_sessions?.toLocaleString() || omniMetrics.active_sessions}</Box></Typography>
+                            <Typography sx={{ fontSize: '15px', color: '#64748b' }}>Avg Decision Time: <Box component="span" sx={{ fontWeight: 700, color: '#0f172a' }}>{omniMetrics.avg_decision_time_sec}s</Box></Typography>
+                            <Typography sx={{ fontSize: '15px', color: '#64748b' }}>Classification Acc: <Box component="span" sx={{ fontWeight: 700, color: '#10b981' }}>{omniMetrics.classification_acc_pct}%</Box></Typography>
+                            <Typography sx={{ fontSize: '15px', color: '#64748b' }}>Checkpoints Stored: <Box component="span" sx={{ fontWeight: 700, color: '#0f172a' }}>{omniMetrics.checkpoints_stored?.toLocaleString() || omniMetrics.checkpoints_stored}</Box></Typography>
+                        </Box>
+                    </Box>
+                    <Box sx={{ p: 2.5, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                            <Typography sx={{ fontWeight: 700, fontSize: '16px', color: '#0f172a' }}>Accelr8cx Email Agent</Typography>
+                            <Typography sx={{ color: '#10b981', fontSize: '14px', fontWeight: 600 }}>• Running</Typography>
+                        </Box>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                            <Typography sx={{ fontSize: '15px', color: '#64748b' }}>Active Threads: <Box component="span" sx={{ fontWeight: 700, color: '#0f172a' }}>89</Box></Typography>
+                            <Typography sx={{ fontSize: '15px', color: '#64748b' }}>Avg Draft Time: <Box component="span" sx={{ fontWeight: 700, color: '#0f172a' }}>2.1s</Box></Typography>
+                            <Typography sx={{ fontSize: '15px', color: '#64748b' }}>Auto-Resolution: <Box component="span" sx={{ fontWeight: 700, color: '#10b981' }}>94.2%</Box></Typography>
+                        </Box>
+                    </Box>
+                </Stack>
+            </Paper>
         </Box>
 
         {/* Middle: Infra */}
         <Box>
           <Stack spacing={2} sx={{ height: '100%' }}>
-              <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-                      <HubRoundedIcon sx={{ color: '#8b5cf6', fontSize: 16 }} />
-                      <Typography sx={{ fontWeight: 700, fontSize: '13px' }}>Event Bus</Typography>
-                      <Box sx={{ flexGrow: 1 }} />
-                      <Typography sx={{ fontSize: '10px', color: '#10b981', fontWeight: 700 }}>• Healthy</Typography>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}>
+                      <DnsRoundedIcon sx={{ color: '#8b5cf6', fontSize: 24 }} />
+                      <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a' }}>Event Bus (Kafka)</Typography>
                   </Stack>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>
-                      <Box>
-                          <Typography sx={{ fontSize: '10px', color: '#64748b' }}>Topics</Typography>
-                          <Typography sx={{ fontWeight: 800, fontSize: '14px' }}>12</Typography>
+                  <Typography sx={{ fontSize: '15px', color: '#10b981', fontWeight: 700, mb: 2 }}>• Healthy</Typography>
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                      <Box sx={{ flex: 1, bgcolor: '#f8fafc', p: 2, borderRadius: '8px', textAlign: 'center' }}>
+                          <Typography sx={{ fontSize: '15px', color: '#64748b', mb: 0.5 }}>Topics</Typography>
+                          <Typography sx={{ fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>12</Typography>
                       </Box>
-                      <Box>
-                          <Typography sx={{ fontSize: '10px', color: '#64748b' }}>Msg/sec</Typography>
-                          <Typography sx={{ fontWeight: 800, fontSize: '14px' }}>234</Typography>
+                      <Box sx={{ flex: 1, bgcolor: '#f8fafc', p: 2, borderRadius: '8px', textAlign: 'center' }}>
+                          <Typography sx={{ fontSize: '15px', color: '#64748b', mb: 0.5 }}>Messages/sec</Typography>
+                          <Typography sx={{ fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>234</Typography>
                       </Box>
-                      <Box>
-                          <Typography sx={{ fontSize: '10px', color: '#64748b' }}>Lag</Typography>
-                          <Typography sx={{ fontWeight: 800, fontSize: '14px', color: '#10b981' }}>&lt;100ms</Typography>
+                      <Box sx={{ flex: 1, bgcolor: '#f8fafc', p: 2, borderRadius: '8px', textAlign: 'center' }}>
+                          <Typography sx={{ fontSize: '15px', color: '#64748b', mb: 0.5 }}>Lag</Typography>
+                          <Typography sx={{ fontWeight: 800, fontSize: '18px', color: '#10b981' }}>&lt;100ms</Typography>
                       </Box>
                   </Box>
               </Paper>
-              <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-                      <StorageRoundedIcon sx={{ color: '#f97316', fontSize: 16 }} />
-                      <Typography sx={{ fontWeight: 700, fontSize: '13px' }}>Context Store</Typography>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
+                      <StorageRoundedIcon sx={{ color: '#ea580c', fontSize: 24 }} />
+                      <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a' }}>Context Store</Typography>
                   </Stack>
-                  <Stack spacing={1}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography sx={{ fontSize: '11px', fontWeight: 700 }}>Redis (Fast)</Typography>
-                          <Typography sx={{ fontSize: '10px', color: '#64748b' }}>1.2GB | 4.8ms</Typography>
+                  <Stack spacing={2} sx={{ flexGrow: 1, justifyContent: 'center' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                          <Typography sx={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}><Box component="span" sx={{ color: '#10b981', mr: 1 }}>•</Box>Redis (Fast Context)</Typography>
+                          <Typography sx={{ fontSize: '14px', color: '#64748b' }}>1.2GB used | 4.8ms avg latency</Typography>
                       </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography sx={{ fontSize: '11px', fontWeight: 700 }}>PostgreSQL</Typography>
-                          <Typography sx={{ fontSize: '10px', color: '#64748b' }}>Conn: 45 | 12ms</Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
+                          <Typography sx={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}><Box component="span" sx={{ color: '#10b981', mr: 1 }}>•</Box>PostgreSQL (Long Term)</Typography>
+                          <Typography sx={{ fontSize: '14px', color: '#64748b' }}>Conn: 45/100 | Query: 12ms</Typography>
                       </Box>
                   </Stack>
               </Paper>
           </Stack>
         </Box>
+        </Box>
 
-        {/* Right: Events */}
-        <Box>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
-                  <ErrorOutlineRoundedIcon sx={{ color: '#ef4444', fontSize: 16 }} />
-                  <Typography sx={{ fontWeight: 700, fontSize: '13px' }}>Recent Events (1h)</Typography>
+        {/* Bottom Row: Events */}
+        <Box sx={{ width: '100%' }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
+                  <ErrorOutlineRoundedIcon sx={{ color: '#dc2626', fontSize: 24 }} />
+                  <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a' }}>Recent Orchestration Events (Last 1 hour)</Typography>
               </Stack>
-              <Stack spacing={1.5}>
-                  <Box sx={{ p: 1, bgcolor: '#fef2f2', borderLeft: '3px solid #ef4444', borderRadius: '4px' }}>
-                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 0.2 }}>
-                          <WarningRoundedIcon sx={{ fontSize: 12, color: '#ef4444' }} />
-                          <Typography sx={{ fontSize: '11px', fontWeight: 700, color: '#b91c1c' }}>Voice Agent: High Latency</Typography>
-                      </Stack>
-                      <Typography sx={{ fontSize: '10px', color: '#b91c1c', opacity: 0.8 }}>Auto-scaled from 4 to 8. Normalized.</Typography>
+              <Stack spacing={2}>
+                  <Box sx={{ p: 2, borderRadius: '8px', bgcolor: '#fef2f2', border: '1px solid #fecaca', display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                      <AccessTimeRoundedIcon sx={{ color: '#dc2626', fontSize: 18, mt: 0.2 }} />
+                      <Box>
+                          <Typography sx={{ fontWeight: 600, color: '#b91c1c', fontSize: '14px', mb: 0.5 }}>Voice Agent: High Latency Detected</Typography>
+                          <Typography sx={{ fontSize: '14px', color: '#dc2626' }}>Auto-scaled Voice Agent instances from 4 to 8. Latency normalized.</Typography>
+                      </Box>
                   </Box>
-                  <Box sx={{ p: 1, bgcolor: '#fffbeb', borderLeft: '3px solid #f59e0b', borderRadius: '4px' }}>
-                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mb: 0.2 }}>
-                          <BoltRoundedIcon sx={{ fontSize: 12, color: '#f59e0b' }} />
-                          <Typography sx={{ fontSize: '11px', fontWeight: 700, color: '#b45309' }}>Checkpoint save delayed (1)</Typography>
-                      </Stack>
-                      <Typography sx={{ fontSize: '10px', color: '#b45309', opacity: 0.8 }}>Recovered from previous state.</Typography>
+                  <Box sx={{ p: 2, borderRadius: '8px', bgcolor: '#fefce8', border: '1px solid #fef08a', display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+                      <AccessTimeRoundedIcon sx={{ color: '#ca8a04', fontSize: 18, mt: 0.2 }} />
+                      <Box>
+                          <Typography sx={{ fontWeight: 600, color: '#a16207', fontSize: '14px', mb: 0.5 }}>LangGraph checkpoint save delayed (1)</Typography>
+                          <Typography sx={{ fontSize: '14px', color: '#ca8a04' }}>Recovered from previous state. No context lost.</Typography>
+                      </Box>
                   </Box>
               </Stack>
           </Paper>

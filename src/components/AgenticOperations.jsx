@@ -20,6 +20,11 @@ import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
+import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 
 const STAT_CARDS = [
   {
@@ -27,31 +32,35 @@ const STAT_CARDS = [
     value: '31,420',
     trend: '+5.2% from last week',
     trendType: 'up',
-    icon: <ChatBubbleRoundedIcon sx={{ color: '#94a3b8' }} />,
-    color: '#3b82f6'
+    trendColor: '#10b981',
+    icon: <ChatBubbleOutlineRoundedIcon sx={{ color: '#475569' }} />,
+    iconBgColor: '#f8fafc'
   },
   {
     label: 'AI Auto-Resolution',
     value: '82.4%',
+    valueColor: '#2563eb',
     trend: '+2.1% efficiency gain',
     trendType: 'up',
-    icon: <SmartToyRoundedIcon sx={{ color: '#3b82f6' }} />,
-    color: '#3b82f6'
+    trendColor: '#10b981',
+    icon: <SmartToyOutlinedIcon sx={{ color: '#3b82f6' }} />,
+    iconBgColor: '#eff6ff'
   },
   {
     label: 'Human Escalation',
     value: '17.6%',
     trend: '-2.1% from last week',
     trendType: 'down',
-    icon: <PersonRoundedIcon sx={{ color: '#f97316' }} />,
-    color: '#f97316'
+    trendColor: '#10b981', // decrease is good
+    icon: <PersonOutlineRoundedIcon sx={{ color: '#f97316' }} />,
+    iconBgColor: '#fff7ed'
   },
   {
     label: 'Avg Resolution Time',
     value: '1m 45s',
-    subText: 'AI: 12s | Human: 6m 30s',
-    icon: <AccessTimeRoundedIcon sx={{ color: '#8b5cf6' }} />,
-    color: '#8b5cf6'
+    subText: 'AI: 12s Human: 6m 30s',
+    icon: <AccessTimeOutlinedIcon sx={{ color: '#a855f7' }} />,
+    iconBgColor: '#faf5ff'
   }
 ];
 
@@ -61,7 +70,7 @@ const AGENTS = [
     description: 'Handles real-time web & mobile chat',
     status: 'Online',
     resolutionRate: 88,
-    icon: <ChatBubbleRoundedIcon />,
+    icon: <ChatBubbleOutlineRoundedIcon />,
     bgcolor: '#eff6ff',
     color: '#3b82f6'
   },
@@ -70,16 +79,16 @@ const AGENTS = [
     description: 'Asynchronous complex queries',
     status: 'Online',
     resolutionRate: 94,
-    icon: <BoltRoundedIcon />,
-    bgcolor: '#f5f3ff',
-    color: '#8b5cf6'
+    icon: <BoltOutlinedIcon />,
+    bgcolor: '#faf5ff',
+    color: '#a855f7'
   },
   {
     name: 'Voice Agent',
     description: 'Conversational IVR & outbound',
     status: 'Online',
     resolutionRate: 65,
-    icon: <SmartToyRoundedIcon />,
+    icon: <SmartToyOutlinedIcon />,
     bgcolor: '#fff7ed',
     color: '#f97316'
   }
@@ -87,7 +96,7 @@ const AGENTS = [
 
 function ResolutionVolumeChart() {
   return (
-    <Box sx={{ width: '100%', height: 240, position: 'relative', mt: 4 }}>
+    <Box sx={{ width: '100%', height: 200, position: 'relative', mt: 3 }}>
       <svg width="100%" height="200" viewBox="0 0 800 200" preserveAspectRatio="none">
         {/* Grid Lines */}
         {[0, 50, 100, 150].map((y) => (
@@ -164,7 +173,7 @@ function ComplexityChart() {
   ];
 
   return (
-    <Box sx={{ width: '100%', height: 240, mt: 4, display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ width: '100%', height: 200, mt: 3, display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', px: 2, gap: 4 }}>
         {data.map((item) => (
           <Box key={item.label} sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'flex-end', gap: 0.5 }}>
@@ -200,15 +209,14 @@ export default function AgenticOperations() {
       flexGrow: 1, 
       p: { xs: 1.5, md: 2.5 }, 
       bgcolor: '#f8fafc', 
-      height: '100%', 
-      overflowY: 'auto',
-      display: 'flex',
+      display: 'flex', 
       flexDirection: 'column',
-      gap: 2
+      gap: 2,
+      pb: 6
     }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
           Agentic Operations Dashboard
         </Typography>
         <Chip 
@@ -227,63 +235,66 @@ export default function AgenticOperations() {
       </Box>
 
       {/* Stats Grid */}
-      <Grid container spacing={2}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         {STAT_CARDS.map((stat, idx) => (
-          <Grid item xs={12} sm={6} lg={3} key={idx}>
-            <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', fontSize: '11px' }}>{stat.label}</Typography>
-                <Avatar sx={{ width: 28, height: 28, bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
-                  {cloneElement(stat.icon, { sx: { fontSize: 16 } })}
-                </Avatar>
-              </Box>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 0.5 }}>{stat.value}</Typography>
+          <Paper elevation={0} key={idx} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 1 }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', fontSize: '13px', lineHeight: 1.2 }}>
+                {stat.label}
+              </Typography>
+              <Avatar sx={{ width: 32, height: 32, bgcolor: stat.iconBgColor, borderRadius: '8px', flexShrink: 0 }}>
+                {cloneElement(stat.icon, { sx: { fontSize: 18 } })}
+              </Avatar>
+            </Box>
+            <Typography variant="h4" sx={{ fontWeight: 800, color: stat.valueColor || '#0f172a', mb: 1, fontSize: { xs: '24px', xl: '32px' } }}>
+              {stat.value}
+            </Typography>
+            <Box sx={{ mt: 'auto' }}>
               {stat.trend ? (
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   {stat.trendType === 'up' ? (
-                    <TrendingUpRoundedIcon sx={{ fontSize: 14, color: '#10b981' }} />
+                    <TrendingUpRoundedIcon sx={{ fontSize: 16, color: stat.trendColor }} />
                   ) : (
-                    <TrendingDownRoundedIcon sx={{ fontSize: 14, color: '#ef4444' }} />
+                    <TrendingDownRoundedIcon sx={{ fontSize: 16, color: stat.trendColor }} />
                   )}
-                  <Typography variant="caption" sx={{ fontWeight: 600, color: stat.trendType === 'up' ? '#10b981' : '#ef4444', fontSize: '11px' }}>
+                  <Typography variant="caption" sx={{ fontWeight: 600, color: stat.trendColor, fontSize: '12px' }}>
                     {stat.trend}
                   </Typography>
                 </Stack>
               ) : (
-                <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', fontSize: '11px' }}>{stat.subText}</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', fontSize: '12px', display: 'block', letterSpacing: '-0.02em' }}>
+                  {stat.subText}
+                </Typography>
               )}
-            </Paper>
-          </Grid>
+            </Box>
+          </Paper>
         ))}
-      </Grid>
+      </Box>
 
       {/* Active AI Agents Section */}
       <Box>
         <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#0f172a' }}>
           Active AI Agents
         </Typography>
-        <Grid container spacing={2}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' }, gap: 2 }}>
           {AGENTS.map((agent, idx) => (
-            <Grid item xs={12} md={4} key={idx}>
-              <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 1.5 }}>
-                  <Avatar sx={{ borderRadius: '8px', bgcolor: agent.bgcolor, color: agent.color, width: 36, height: 36 }}>
-                    {cloneElement(agent.icon, { sx: { fontSize: 20 } })}
-                  </Avatar>
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>{agent.name}</Typography>
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: '#10b981' }} />
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#10b981', fontSize: '10px' }}>{agent.status}</Typography>
-                      </Stack>
-                    </Box>
-                    <Typography variant="caption" sx={{ color: '#64748b', display: 'block', fontSize: '10px' }}>{agent.description}</Typography>
-                  </Box>
+            <Paper elevation={0} key={idx} sx={{ p: 2.5, borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+              <Avatar sx={{ borderRadius: '10px', bgcolor: agent.bgcolor, color: agent.color, width: 44, height: 44, flexShrink: 0 }}>
+                {cloneElement(agent.icon, { sx: { fontSize: 22 } })}
+              </Avatar>
+              <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.name}</Typography>
+                  <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flexShrink: 0, ml: 1 }}>
+                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#10b981' }} />
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#10b981', fontSize: '11px' }}>{agent.status}</Typography>
+                  </Stack>
                 </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 2.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{agent.description}</Typography>
+                
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', fontSize: '11px' }}>Resolution Rate</Typography>
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '11px' }}>{agent.resolutionRate}%</Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '12px' }}>{agent.resolutionRate}%</Typography>
                 </Box>
                 <LinearProgress 
                   variant="determinate" 
@@ -295,33 +306,29 @@ export default function AgenticOperations() {
                     '& .MuiLinearProgress-bar': { borderRadius: 2, bgcolor: agent.color }
                   }} 
                 />
-              </Paper>
-            </Grid>
+              </Box>
+            </Paper>
           ))}
-        </Grid>
+        </Box>
       </Box>
 
       {/* Charts Section */}
-      <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-        <Grid item xs={12} lg={6}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>Resolution Volume</Typography>
-            <Typography variant="caption" sx={{ color: '#64748b', mb: 1, display: 'block', fontSize: '11px' }}>AI Automated vs Human Escalated</Typography>
-            <Box sx={{ flexGrow: 1, minHeight: 180 }}>
-              <ResolutionVolumeChart />
-            </Box>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} lg={6}>
-          <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>Resolution by Complexity</Typography>
-            <Typography variant="caption" sx={{ color: '#64748b', mb: 1, display: 'block', fontSize: '11px' }}>How Omni-Router distributes workload (%)</Typography>
-            <Box sx={{ flexGrow: 1, minHeight: 180 }}>
-              <ComplexityChart />
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2, flexGrow: 1, minHeight: 0 }}>
+        <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>Resolution Volume</Typography>
+          <Typography variant="caption" sx={{ color: '#64748b', mb: 1, display: 'block', fontSize: '11px' }}>AI Automated vs Human Escalated</Typography>
+          <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+            <ResolutionVolumeChart />
+          </Box>
+        </Paper>
+        <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>Resolution by Complexity</Typography>
+          <Typography variant="caption" sx={{ color: '#64748b', mb: 1, display: 'block', fontSize: '11px' }}>How Omni-Router distributes workload (%)</Typography>
+          <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+            <ComplexityChart />
+          </Box>
+        </Paper>
+      </Box>
     </Box>
   );
 }

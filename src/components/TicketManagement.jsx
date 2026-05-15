@@ -175,7 +175,7 @@ function ActionsMenu({ onViewDetails }) {
   );
 }
 
-export default function TicketManagement({ onTicketClick }) {
+export default function TicketManagement({ onTicketClick, onCustomerClick }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState(() => sessionStorage.getItem('ticketSearch') || '');
@@ -493,7 +493,19 @@ export default function TicketManagement({ onTicketClick }) {
                               {ticket.customer.initials}
                             </Avatar>
                             <Box>
-                              <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
+                              <Typography 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (onCustomerClick) onCustomerClick(ticket.customer);
+                                }}
+                                sx={{ 
+                                  fontSize: '13px', 
+                                  fontWeight: 600, 
+                                  color: '#3b82f6', 
+                                  cursor: 'pointer',
+                                  '&:hover': { textDecoration: 'underline' }
+                                }}
+                              >
                                 {ticket.customer.name}
                               </Typography>
                               <Chip
@@ -636,6 +648,43 @@ export default function TicketManagement({ onTicketClick }) {
                 <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Ticket Number</Typography>
                 <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
                   {selectedTicketDetails.ticket_number || selectedTicketDetails.ticket_no || 'N/A'}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Customer Name</Typography>
+                <Typography 
+                  variant="body2" 
+                  onClick={() => {
+                    const emailStr = selectedTicketDetails.customer_email || `customer${selectedTicketDetails.cust_id || ''}@example.com`;
+                    const namePart = emailStr.split('@')[0];
+                    const name = namePart.replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'CU';
+                    
+                    setDetailsModalOpen(false);
+                    if (onCustomerClick) {
+                      onCustomerClick({
+                        name: name,
+                        initials: initials,
+                        tier: 'Standard',
+                        tierType: 'standard',
+                        email: selectedTicketDetails.customer_email,
+                        phone: selectedTicketDetails.customer_phone || null,
+                        custId: selectedTicketDetails.cust_id
+                      });
+                    }
+                  }}
+                  sx={{ 
+                    fontWeight: 700, 
+                    color: '#3b82f6', 
+                    cursor: 'pointer',
+                    '&:hover': { textDecoration: 'underline' }
+                  }}
+                >
+                  {(() => {
+                    const emailStr = selectedTicketDetails.customer_email || `customer${selectedTicketDetails.cust_id || ''}@example.com`;
+                    const namePart = emailStr.split('@')[0];
+                    return namePart.replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                  })()}
                 </Typography>
               </Box>
               <Box>
