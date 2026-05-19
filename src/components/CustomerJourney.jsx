@@ -13,10 +13,10 @@ import SmartToyRoundedIcon from '@mui/icons-material/SmartToyRounded';
 import { CircularProgress } from '@mui/material';
 
 const JOURNEY_STEPS = [
-  { label: 'Email Agent', status: 'Auto-Resolved', icon: <EmailRoundedIcon />, color: '#3b82f6' },
-  { label: 'Chat Agent', status: 'Auto-Resolved', icon: <ChatBubbleRoundedIcon />, color: '#8b5cf6' },
-  { label: 'Voice Agent', status: 'Escalated', icon: <PhoneInTalkRoundedIcon />, color: '#f97316', active: true },
-  { label: 'Human Agent', status: 'Resolved', icon: <PersonRoundedIcon />, color: '#1e293b' },
+  { label: 'Email Agent', status: 'Auto-Resolved', icon: <EmailRoundedIcon />, color: '#3b82f6', time: '10:15 AM', date: '05/19/2026' },
+  { label: 'Chat Agent', status: 'Auto-Resolved', icon: <ChatBubbleRoundedIcon />, color: '#8b5cf6', time: '10:20 AM', date: '05/19/2026' },
+  { label: 'Voice Agent', status: 'Escalated', icon: <PhoneInTalkRoundedIcon />, color: '#f97316', active: true, time: '10:35 AM', date: '05/19/2026' },
+  { label: 'Human Agent', status: 'Resolved', icon: <PersonRoundedIcon />, color: '#1e293b', time: '10:45 AM', date: '05/19/2026' },
 ];
 
 const AGENT_MAP = {
@@ -72,11 +72,16 @@ export default function CustomerJourney({ selectedCustomer }) {
             const agentCfg = AGENT_MAP[s.channel] || AGENT_MAP['chat'];
             // Deduplicate consecutive same agents
             if (flow.length === 0 || flow[flow.length - 1].label !== agentCfg.label) {
+              const date = new Date(s.created_at);
+              const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+              const dateStr = date.toLocaleDateString();
               flow.push({
                 label: agentCfg.label,
                 channelRaw: s.channel,
                 icon: agentCfg.icon,
-                color: agentCfg.color
+                color: agentCfg.color,
+                time: timeStr,
+                date: dateStr
               });
             }
           });
@@ -245,12 +250,23 @@ export default function CustomerJourney({ selectedCustomer }) {
                 >
                   {step.icon}
                 </Avatar>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>{step.label}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', lineHeight: 1.2 }}>{step.label}</Typography>
+                {step.time && (
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500, fontSize: '11px', mt: 0.2 }}>
+                    {step.time}
+                  </Typography>
+                )}
+                {step.date && (
+                  <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 500, fontSize: '10px', lineHeight: 1.1 }}>
+                    {step.date}
+                  </Typography>
+                )}
                 <Typography
                   variant="caption"
                   sx={{
                     color: step.status === 'Escalated' ? '#f97316' : step.status === 'Resolved' || step.status === 'Auto-Resolved' ? '#10b981' : '#64748b',
                     fontWeight: 600,
+                    mt: 0.2
                   }}
                 >
                   {step.status}
