@@ -28,11 +28,11 @@ import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 
-const API_BASE = 'http://164.52.196.197:8099/dashboard/channel-performance';
+const API_BASE = `${import.meta.env.OMNICX_URL}/dashboard/channel-performance`;
 
 // Agent → icon + color config
 const AGENT_CONFIG = {
-  'Chat Agent':  { color: '#3b82f6', icon: <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 18 }} /> },
+  'Chat Agent': { color: '#3b82f6', icon: <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 18 }} /> },
   'Email Agent': { color: '#8b5cf6', icon: <EmailOutlinedIcon sx={{ fontSize: 18 }} /> },
   'Voice Agent': { color: '#f97316', icon: <PhoneOutlinedIcon sx={{ fontSize: 18 }} /> },
   'Human Agent': { color: '#1e293b', icon: <PersonOutlineRoundedIcon sx={{ fontSize: 18 }} /> },
@@ -64,7 +64,7 @@ function VolumeByChannelChart({ data }) {
   if (!data || data.length === 0) return null;
 
   const CHANNEL_COLORS = {
-    chat:  '#3b82f6',
+    chat: '#3b82f6',
     email: '#8b5cf6',
     voice: '#f97316',
     human: '#1e293b',
@@ -121,7 +121,7 @@ function VolumeByChannelChart({ data }) {
       </Box>
       <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
         {[
-          { label: 'Chat',  color: '#3b82f6' },
+          { label: 'Chat', color: '#3b82f6' },
           { label: 'Email', color: '#8b5cf6' },
           { label: 'Human', color: '#1e293b' },
           { label: 'Voice', color: '#f97316' },
@@ -204,37 +204,10 @@ export default function ChannelPerformance() {
     return () => clearInterval(interval);
   }, [fetchData, days]);
 
-  const summary = data?.summary || {
-    overall_auto_resolution_pct: 64.2,
-    overall_auto_resolution_delta: 3.5,
-    total_volume: 24500,
-    total_volume_delta_pct: 8.2,
-    avg_handle_time_display: "4m 15s",
-    avg_handle_time_delta_sec: -12,
-    avg_csat: 4.6,
-    avg_csat_delta: 0.2
-  };
-  const volumeByChannel = data?.volume_by_channel || [
-    { day: 'Mon', chat: 800, email: 600, voice: 400, human: 200 },
-    { day: 'Tue', chat: 900, email: 650, voice: 420, human: 210 },
-    { day: 'Wed', chat: 850, email: 620, voice: 450, human: 230 },
-    { day: 'Thu', chat: 950, email: 700, voice: 480, human: 240 },
-    { day: 'Fri', chat: 1000, email: 750, voice: 500, human: 260 },
-    { day: 'Sat', chat: 600, email: 400, voice: 300, human: 150 },
-    { day: 'Sun', chat: 500, email: 350, voice: 250, human: 120 }
-  ];
-  const resolutionRates = data?.resolution_rates || [
-    { agent: 'Chat Agent', resolution_rate: 78 },
-    { agent: 'Email Agent', resolution_rate: 65 },
-    { agent: 'Voice Agent', resolution_rate: 42 },
-    { agent: 'Human Agent', resolution_rate: 95 }
-  ];
-  const channelMetrics = data?.channel_metrics || [
-    { agent: 'Chat Agent', volume: 8500, resolution_rate: 78, escalation_rate: 22, avg_handle_time_display: "1m 20s", csat: 4.7 },
-    { agent: 'Email Agent', volume: 6200, resolution_rate: 65, escalation_rate: 35, avg_handle_time_display: "2m 45s", csat: 4.5 },
-    { agent: 'Voice Agent', volume: 4300, resolution_rate: 42, escalation_rate: 58, avg_handle_time_display: "3m 15s", csat: 4.3 },
-    { agent: 'Human Agent', volume: 5500, resolution_rate: 95, escalation_rate: 5, avg_handle_time_display: "8m 30s", csat: 4.8 }
-  ];
+  const summary = data?.summary || {};
+  const volumeByChannel = data?.volume_by_channel || [];
+  const resolutionRates = data?.resolution_rates || [];
+  const channelMetrics = data?.channel_metrics || [];
 
   // Build stat cards from live API summary
   // overall_auto_resolution_delta: positive = good, negative = bad
@@ -295,7 +268,7 @@ export default function ChannelPerformance() {
     }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: '#0f172a' }}>
           Channel Performance Dashboard
         </Typography>
         <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -317,123 +290,123 @@ export default function ChannelPerformance() {
       </Box>
 
       {/* Stats Grid */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
-            {statCards.map((stat, idx) => (
-              <Paper elevation={0} key={idx} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
-                  <Avatar sx={{ width: 28, height: 28, bgcolor: `${stat.color}10`, color: stat.color, border: `1px solid ${stat.color}20` }}>
-                    {stat.icon}
-                  </Avatar>
-                  {stat.trend ? (
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      {stat.trend.trendType === 'up' ? (
-                        <TrendingUpRoundedIcon sx={{ fontSize: 14, color: stat.trend.color }} />
-                      ) : (
-                        <TrendingDownRoundedIcon sx={{ fontSize: 14, color: stat.trend.color }} />
-                      )}
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: stat.trend.color }}>
-                        {stat.trend.text}
-                      </Typography>
-                    </Stack>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+        {statCards.map((stat, idx) => (
+          <Paper elevation={0} key={idx} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+              <Avatar sx={{ width: 28, height: 28, bgcolor: `${stat.color}10`, color: stat.color, border: `1px solid ${stat.color}20` }}>
+                {stat.icon}
+              </Avatar>
+              {stat.trend ? (
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  {stat.trend.trendType === 'up' ? (
+                    <TrendingUpRoundedIcon sx={{ fontSize: 14, color: stat.trend.color }} />
                   ) : (
-                    <Typography variant="caption" sx={{ color: '#cbd5e1', fontSize: '11px' }}>—</Typography>
+                    <TrendingDownRoundedIcon sx={{ fontSize: 14, color: stat.trend.color }} />
                   )}
-                </Box>
-                <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', display: 'block', mb: 0.5 }}>
-                  {stat.label}
-                </Typography>
-                <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
-                  {stat.value}
-                </Typography>
-              </Paper>
-            ))}
-          </Box>
-
-          {/* Middle Charts */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
-            <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a', mb: 2 }}>
-                Interaction Volume by Channel
-              </Typography>
-              <VolumeByChannelChart data={volumeByChannel} />
-            </Paper>
-            <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a', mb: 2 }}>
-                Resolution Rate by Agent
-              </Typography>
-              <ResRateByAgentChart data={resolutionRates} />
-            </Paper>
-          </Box>
-
-          {/* Detailed Metrics Table */}
-          <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-            <Box sx={{ p: 2, borderBottom: '1px solid #e2e8f0' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>
-                Detailed Channel Metrics
-              </Typography>
+                  <Typography variant="caption" sx={{ fontWeight: 700, color: stat.trend.color }}>
+                    {stat.trend.text}
+                  </Typography>
+                </Stack>
+              ) : (
+                <Typography variant="caption" sx={{ color: '#cbd5e1', fontSize: '11px' }}>—</Typography>
+              )}
             </Box>
-            <TableContainer>
-              <Table sx={{ minWidth: 650 }}>
-                <TableHead>
-                  <TableRow>
-                    {['Channel / Agent', 'Volume', 'Resolution Rate', 'Escalation Rate', 'Avg Handle Time', 'CSAT'].map(h => (
-                      <TableCell key={h} sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', py: 1.5 }}>
-                        {h}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {channelMetrics.map((row) => {
-                    const { color, icon } = getAgentConfig(row.agent);
-                    const isHuman = row.agent === 'Human Agent';
-                    const resRate = row.resolution_rate ?? 0;
-                    const escRate = row.escalation_rate ?? 0;
-                    return (
-                      <TableRow key={row.agent} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                        <TableCell sx={{ py: 1 }}>
-                          <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Avatar sx={{
-                              width: 32, height: 32,
-                              bgcolor: isHuman ? '#1e293b' : `${color}15`,
-                              color: isHuman ? '#fff' : color
-                            }}>
-                              {icon}
-                            </Avatar>
-                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a', fontSize: '12px' }}>
-                              {row.agent}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 500, color: '#64748b', fontSize: '12px', py: 1 }}>
-                          {row.volume?.toLocaleString() ?? '—'}
-                        </TableCell>
-                        <TableCell sx={{ py: 1 }}>
-                          <Stack direction="row" spacing={1.5} alignItems="center">
-                            <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '12px', minWidth: 45 }}>
-                              {resRate}%
-                            </Typography>
-                            <Box sx={{ width: 80, height: 6, bgcolor: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
-                              <Box sx={{ width: `${resRate}%`, height: '100%', bgcolor: color, borderRadius: 4 }} />
-                            </Box>
-                          </Stack>
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 500, color: '#64748b', fontSize: '12px', py: 1 }}>
-                          {escRate}%
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 500, color: '#64748b', fontSize: '12px', py: 1 }}>
-                          {row.avg_handle_time_display ?? '—'}
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 800, color: '#0f172a', fontSize: '12px', py: 1 }}>
-                          {row.csat != null ? row.csat : '—'}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', display: 'block', mb: 0.5 }}>
+              {stat.label}
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a' }}>
+              {stat.value}
+            </Typography>
           </Paper>
+        ))}
+      </Box>
+
+      {/* Middle Charts */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 3 }}>
+        <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a', mb: 2 }}>
+            Interaction Volume by Channel
+          </Typography>
+          <VolumeByChannelChart data={volumeByChannel} />
+        </Paper>
+        <Paper elevation={0} sx={{ p: 2, borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a', mb: 2 }}>
+            Resolution Rate by Agent
+          </Typography>
+          <ResRateByAgentChart data={resolutionRates} />
+        </Paper>
+      </Box>
+
+      {/* Detailed Metrics Table */}
+      <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+        <Box sx={{ p: 2, borderBottom: '1px solid #e2e8f0' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+            Detailed Channel Metrics
+          </Typography>
+        </Box>
+        <TableContainer>
+          <Table sx={{ minWidth: 650 }}>
+            <TableHead>
+              <TableRow>
+                {['Channel / Agent', 'Volume', 'Resolution Rate', 'Escalation Rate', 'Avg Handle Time', 'CSAT'].map(h => (
+                  <TableCell key={h} sx={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', py: 1.5 }}>
+                    {h}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {channelMetrics.map((row) => {
+                const { color, icon } = getAgentConfig(row.agent);
+                const isHuman = row.agent === 'Human Agent';
+                const resRate = row.resolution_rate ?? 0;
+                const escRate = row.escalation_rate ?? 0;
+                return (
+                  <TableRow key={row.agent} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                    <TableCell sx={{ py: 1 }}>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Avatar sx={{
+                          width: 32, height: 32,
+                          bgcolor: isHuman ? '#1e293b' : `${color}15`,
+                          color: isHuman ? '#fff' : color
+                        }}>
+                          {icon}
+                        </Avatar>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a', fontSize: '12px' }}>
+                          {row.agent}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 500, color: '#64748b', fontSize: '12px', py: 1 }}>
+                      {row.volume?.toLocaleString() ?? '—'}
+                    </TableCell>
+                    <TableCell sx={{ py: 1 }}>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '12px', minWidth: 45 }}>
+                          {resRate}%
+                        </Typography>
+                        <Box sx={{ width: 80, height: 6, bgcolor: '#f1f5f9', borderRadius: 4, overflow: 'hidden' }}>
+                          <Box sx={{ width: `${resRate}%`, height: '100%', bgcolor: color, borderRadius: 4 }} />
+                        </Box>
+                      </Stack>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 500, color: '#64748b', fontSize: '12px', py: 1 }}>
+                      {escRate}%
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 500, color: '#64748b', fontSize: '12px', py: 1 }}>
+                      {row.avg_handle_time_display ?? '—'}
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: '#0f172a', fontSize: '12px', py: 1 }}>
+                      {row.csat != null ? row.csat : '—'}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
     </Box>
   );
 }

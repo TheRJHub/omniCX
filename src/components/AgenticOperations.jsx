@@ -22,7 +22,7 @@ import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
 
-const API_BASE = 'http://164.52.196.197:8099/dashboard/agentic-operations?days=7';
+const API_BASE = `${import.meta.env.OMNICX_URL}/dashboard/agentic-operations?days=7`;
 
 // Map agent name to icon/color config
 const AGENT_ICON_MAP = {
@@ -97,52 +97,52 @@ function ResolutionVolumeChart({ data }) {
           >
             <defs>
               <linearGradient id="colorAI" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.2} />
               </linearGradient>
               <linearGradient id="colorHuman" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#f97316" stopOpacity={0.2}/>
+                <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0.2} />
               </linearGradient>
             </defs>
-            <XAxis 
-              dataKey="day" 
-              stroke="#94a3b8" 
-              fontSize={12} 
-              tickLine={false} 
-              axisLine={false} 
+            <XAxis
+              dataKey="day"
+              stroke="#94a3b8"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
             />
-            <YAxis 
-              stroke="#94a3b8" 
-              fontSize={12} 
-              tickLine={false} 
-              axisLine={false} 
+            <YAxis
+              stroke="#94a3b8"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
             />
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
               labelStyle={{ fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}
               itemStyle={{ fontWeight: 500 }}
               cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
             />
-            <Area 
-              type="monotone" 
-              dataKey="ai_automated" 
+            <Area
+              type="monotone"
+              dataKey="ai_automated"
               name="AI Auto-Resolved"
-              stroke="#3b82f6" 
+              stroke="#3b82f6"
               strokeWidth={2}
-              fillOpacity={1} 
-              fill="url(#colorAI)" 
+              fillOpacity={1}
+              fill="url(#colorAI)"
               activeDot={{ r: 6, strokeWidth: 0 }}
             />
-            <Area 
-              type="monotone" 
-              dataKey="human_escalated" 
+            <Area
+              type="monotone"
+              dataKey="human_escalated"
               name="Human Escalated"
-              stroke="#f97316" 
+              stroke="#f97316"
               strokeWidth={2}
-              fillOpacity={1} 
-              fill="url(#colorHuman)" 
+              fillOpacity={1}
+              fill="url(#colorHuman)"
               activeDot={{ r: 6, strokeWidth: 0 }}
             />
           </AreaChart>
@@ -180,43 +180,43 @@ function ComplexityChart({ data }) {
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-            <XAxis 
-              dataKey="complexity" 
-              stroke="#94a3b8" 
-              fontSize={12} 
-              tickLine={false} 
-              axisLine={false} 
+            <XAxis
+              dataKey="complexity"
+              stroke="#94a3b8"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
             />
-            <YAxis 
-              stroke="#94a3b8" 
-              fontSize={12} 
-              tickLine={false} 
-              axisLine={false} 
+            <YAxis
+              stroke="#94a3b8"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
               domain={[0, 100]}
               tickFormatter={(tick) => `${tick}%`}
             />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
               labelStyle={{ fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}
               itemStyle={{ fontWeight: 500 }}
               cursor={{ fill: '#f8fafc' }}
               formatter={(value) => `${value}%`}
             />
-            <Bar 
-              dataKey="ai_pct" 
-              name="AI Handled" 
-              stackId="a" 
-              fill="#3b82f6" 
-              radius={[0, 0, 4, 4]} 
-              barSize={40} 
+            <Bar
+              dataKey="ai_pct"
+              name="AI Handled"
+              stackId="a"
+              fill="#3b82f6"
+              radius={[0, 0, 4, 4]}
+              barSize={40}
             />
-            <Bar 
-              dataKey="human_pct" 
-              name="Human Escalated" 
-              stackId="a" 
-              fill="#f97316" 
-              radius={[4, 4, 0, 0]} 
-              barSize={40} 
+            <Bar
+              dataKey="human_pct"
+              name="Human Escalated"
+              stackId="a"
+              fill="#f97316"
+              radius={[4, 4, 0, 0]}
+              barSize={40}
             />
           </BarChart>
         </ResponsiveContainer>
@@ -243,15 +243,23 @@ function ComplexityChart({ data }) {
 
 export default function AgenticOperations() {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
+      setLoading(true);
+      setError(null);
       const res = await fetch(`${API_BASE}&_t=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       setData(json);
     } catch (err) {
       console.error(err.message || 'Failed to fetch data');
+      setError(err.message || 'Failed to fetch data');
+      setData(null);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -274,37 +282,11 @@ export default function AgenticOperations() {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  const summary = data?.summary || {
-    total_interactions: 24592,
-    total_interactions_delta_pct: 12.4,
-    ai_auto_resolution_pct: 68.2,
-    ai_auto_resolution_delta: 4.1,
-    human_escalation_pct: 31.8,
-    human_escalation_delta: -2.5,
-    avg_resolution_time_display: '2m 14s',
-    avg_ai_resolution_time_display: '45s',
-    avg_human_resolution_time_display: '6m 30s'
-  };
-  const activeAgents = data?.active_agents || [
-    { agent: 'Chat Agent', status: 'Online', description: 'Handles website chat interactions', resolution_rate: 78 },
-    { agent: 'Email Agent (Accelr8cx)', status: 'Online', description: 'Processes incoming customer emails', resolution_rate: 65 },
-    { agent: 'Voice Agent', status: 'Online', description: 'Handles inbound phone calls', resolution_rate: 42 }
-  ];
-  const resolutionVolume = data?.resolution_volume || [
-    { day: 'Mon', ai_automated: 1200, human_escalated: 400 },
-    { day: 'Tue', ai_automated: 1350, human_escalated: 380 },
-    { day: 'Wed', ai_automated: 1420, human_escalated: 410 },
-    { day: 'Thu', ai_automated: 1600, human_escalated: 450 },
-    { day: 'Fri', ai_automated: 1850, human_escalated: 480 },
-    { day: 'Sat', ai_automated: 1050, human_escalated: 250 },
-    { day: 'Sun', ai_automated: 900, human_escalated: 180 }
-  ];
-  const resolutionByComplexity = data?.resolution_by_complexity || [
-    { complexity: 'Low', ai_pct: 88, human_pct: 12 },
-    { complexity: 'Medium', ai_pct: 55, human_pct: 45 },
-    { complexity: 'High', ai_pct: 15, human_pct: 85 }
-  ];
-  const omniRouterActive = data?.omni_router_active ?? true;
+  const summary = data?.summary || {};
+  const activeAgents = data?.active_agents || [];
+  const resolutionVolume = data?.resolution_volume || [];
+  const resolutionByComplexity = data?.resolution_by_complexity || [];
+  const omniRouterActive = data?.omni_router_active ?? false;
 
   // Build stat cards from API data
   const totalInteractionsDelta = formatDelta(summary.total_interactions_delta_pct, false);
@@ -357,7 +339,7 @@ export default function AgenticOperations() {
     >
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: '#0f172a' }}>
           Agentic Operations Dashboard
         </Typography>
         <Chip

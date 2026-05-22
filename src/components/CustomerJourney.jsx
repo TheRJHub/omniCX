@@ -12,12 +12,7 @@ import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import SmartToyRoundedIcon from '@mui/icons-material/SmartToyRounded';
 import { CircularProgress } from '@mui/material';
 
-const JOURNEY_STEPS = [
-  { label: 'Email Agent', status: 'Auto-Resolved', icon: <EmailRoundedIcon />, color: '#3b82f6', time: '10:15 AM', date: '05/19/2026' },
-  { label: 'Chat Agent', status: 'Auto-Resolved', icon: <ChatBubbleRoundedIcon />, color: '#8b5cf6', time: '10:20 AM', date: '05/19/2026' },
-  { label: 'Voice Agent', status: 'Escalated', icon: <PhoneInTalkRoundedIcon />, color: '#f97316', active: true, time: '10:35 AM', date: '05/19/2026' },
-  { label: 'Human Agent', status: 'Resolved', icon: <PersonRoundedIcon />, color: '#1e293b', time: '10:45 AM', date: '05/19/2026' },
-];
+const JOURNEY_STEPS = [];
 
 const AGENT_MAP = {
   'agent_assist': { label: 'Human Agent (Assist)', icon: <PersonRoundedIcon sx={{ fontSize: 18, color: '#1e293b' }} />, color: '#1e293b' },
@@ -35,21 +30,27 @@ export default function CustomerJourney({ selectedCustomer }) {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      // Use selectedCustomer if available, otherwise default to Pratik Abhang
-      const target = selectedCustomer || { email: 'pratikabhang@gmail.com', phone: '9673440417' };
-      
+      // Use selectedCustomer if available, otherwise default to empty
+      const target = selectedCustomer || {};
+
+      if (!target.email && !target.phone) {
+        setSessions([]);
+        setDynamicJourney([]);
+        return;
+      }
+
       setLoading(true);
       try {
         const identifier = target.email ? `email=${target.email}` : `phone=${target.phone}`;
-        const response = await fetch(`http://164.52.196.197:8099/interactions/history?${identifier}`);
+        const response = await fetch(`${import.meta.env.OMNICX_URL}/interactions/history?${identifier}`);
         const data = await response.json();
-        
+
         if (data && data.sessions) {
           const mapped = data.sessions.map(s => {
             const agentCfg = AGENT_MAP[s.channel] || AGENT_MAP['chat'];
             const date = new Date(s.created_at);
             const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+
             return {
               time: timeStr,
               date: date.toLocaleDateString(),
@@ -98,7 +99,7 @@ export default function CustomerJourney({ selectedCustomer }) {
               status
             };
           });
-          
+
           setDynamicJourney(finalFlow.length > 0 ? finalFlow : JOURNEY_STEPS);
         } else {
           setSessions([]);
@@ -117,22 +118,26 @@ export default function CustomerJourney({ selectedCustomer }) {
 
   useEffect(() => {
     const fetchCustomerTickets = async () => {
-      const target = selectedCustomer || { email: 'pratikabhang@gmail.com' };
+      const target = selectedCustomer || {};
+      if (!target.email && !target.phone) {
+        setCustomerTickets([]);
+        return;
+      }
       setLoadingTickets(true);
       try {
-        const response = await fetch(`http://164.52.196.197:8099/tickets`);
+        const response = await fetch(`${import.meta.env.OMNICX_URL}/tickets`);
         const data = await response.json();
-        
+
         let ticketsArray = [];
         if (Array.isArray(data)) ticketsArray = data;
         else if (data && Array.isArray(data.tickets)) ticketsArray = data.tickets;
         else if (data && Array.isArray(data.data)) ticketsArray = data.data;
-        
+
         // Filter by email
         const userTickets = ticketsArray.filter(
           (t) => t.customer_email?.toLowerCase() === target.email?.toLowerCase()
         );
-        
+
         setCustomerTickets(userTickets);
       } catch (error) {
         console.error('Error fetching customer tickets:', error);
@@ -141,23 +146,17 @@ export default function CustomerJourney({ selectedCustomer }) {
         setLoadingTickets(false);
       }
     };
-    
+
     fetchCustomerTickets();
   }, [selectedCustomer]);
 
-  const customer = selectedCustomer || {
-    name: 'Pratik Abhang',
-    email: 'pratikabhang@gmail.com',
-    phone: '9673440417',
-    tier: 'GOLD',
-    tierType: 'premium'
-  };
+  const customer = selectedCustomer || {};
 
   return (
     <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, bgcolor: '#f8fafc' }}>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: '#0f172a' }}>
           Customer Journey Dashboard
         </Typography>
         <Paper
@@ -192,12 +191,14 @@ export default function CustomerJourney({ selectedCustomer }) {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a' }}>{customer.name}</Typography>
-              <Chip
-                label="Active"
-                size="small"
-                sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 700, px: 1 }}
-              />
+              <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a' }}>{customer.name || '—'}</Typography>
+              {customer.name && (
+                <Chip
+                  label="Active"
+                  size="small"
+                  sx={{ bgcolor: '#dcfce7', color: '#15803d', fontWeight: 700, px: 1 }}
+                />
+              )}
             </Box>
             <Typography variant="body2" sx={{ color: '#64748b', mb: 2 }}>ID: {customer.custId || customer.id || 'N/A'}</Typography>
             <Stack direction="row" spacing={3} sx={{ color: '#475569' }}>
@@ -212,11 +213,11 @@ export default function CustomerJourney({ selectedCustomer }) {
             </Stack>
           </Box>
           <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 500 }}>
-            Last Contact: <Box component="span" sx={{ color: '#475569' }}>{sessions[0]?.time} {sessions[0]?.date}</Box>
+            Last Contact: <Box component="span" sx={{ color: '#475569' }}>{sessions.length > 0 ? `${sessions[0].time} ${sessions[0].date}` : '—'}</Box>
           </Typography>
         </Box>
       </Paper>
-      
+
       {/* Agent Flow Card */}
       {sessions.length > 0 && (
         <Paper elevation={0} sx={{ p: 3, borderRadius: '16px', border: '1px solid #e2e8f0', mb: 3 }}>
@@ -372,74 +373,74 @@ export default function CustomerJourney({ selectedCustomer }) {
         {/* Right Column */}
         <Box sx={{ width: { xs: '100%', md: '350px' }, flexShrink: 0 }}>
           <Box>
-          <Paper elevation={0} sx={{ p: 3, borderRadius: '16px', border: '1px solid #e2e8f0', mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 3, color: '#0f172a' }}>Live Context</Typography>
-            <Stack spacing={2.5}>
-              {[
-                { label: 'Current Intent', value: 'Refund Dispute', color: '#1e293b' },
-                { label: 'Complexity', value: 'High', color: '#ef4444' },
-                { label: 'Order ID', value: '#12345', color: '#3b82f6', bold: true },
-                { label: 'Customer Tier', value: 'Gold', color: '#f59e0b' },
-                { label: 'Risk Score', value: 'Low', color: '#10b981' },
-              ].map((row, idx) => (
-                <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ color: '#64748b' }}>{row.label}</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: row.bold ? 800 : 700, color: row.color }}>{row.value}</Typography>
-                </Box>
-              ))}
-            </Stack>
-          </Paper>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: '16px', border: '1px solid #e2e8f0', mb: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 3, color: '#0f172a' }}>Live Context</Typography>
+              <Stack spacing={2.5}>
+                {[
+                  { label: 'Current Intent', value: '—', color: '#1e293b' },
+                  { label: 'Complexity', value: '—', color: '#1e293b' },
+                  { label: 'Order ID', value: '—', color: '#1e293b', bold: true },
+                  { label: 'Customer Tier', value: '—', color: '#1e293b' },
+                  { label: 'Risk Score', value: '—', color: '#1e293b' },
+                ].map((row, idx) => (
+                  <Box key={idx} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="body2" sx={{ color: '#64748b' }}>{row.label}</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: row.bold ? 800 : 700, color: row.color }}>{row.value}</Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Paper>
 
-          <Paper elevation={0} sx={{ p: 3, borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 3, color: '#0f172a' }}>Active Tickets</Typography>
-            <Stack spacing={2}>
-              {loadingTickets ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-                  <CircularProgress size={20} />
-                </Box>
-              ) : customerTickets.length === 0 ? (
-                <Typography variant="body2" sx={{ color: '#94a3b8', textAlign: 'center' }}>No active tickets found.</Typography>
-              ) : (
-                customerTickets.map((ticket, idx) => {
-                  const status = ticket.ticket_status || 'In Progress';
-                  const isClosed = status.toLowerCase() === 'closed' || status.toLowerCase() === 'ai-resolved';
-                  
-                  return (
-                    <Box
-                      key={idx}
-                      sx={{
-                        p: 2,
-                        borderRadius: '12px',
-                        border: '1px solid #f1f5f9',
-                        bgcolor: '#fff',
-                        '&:hover': { borderColor: '#e2e8f0' }
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography sx={{ fontWeight: 700, fontSize: '13px', color: '#3b82f6' }}>
-                          {ticket.ticket_number || `#TKT_UNK`}
+            <Paper elevation={0} sx={{ p: 3, borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 3, color: '#0f172a' }}>Active Tickets</Typography>
+              <Stack spacing={2}>
+                {loadingTickets ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                    <CircularProgress size={20} />
+                  </Box>
+                ) : customerTickets.length === 0 ? (
+                  <Typography variant="body2" sx={{ color: '#94a3b8', textAlign: 'center' }}>No active tickets found.</Typography>
+                ) : (
+                  customerTickets.map((ticket, idx) => {
+                    const status = ticket.ticket_status || 'In Progress';
+                    const isClosed = status.toLowerCase() === 'closed' || status.toLowerCase() === 'ai-resolved';
+
+                    return (
+                      <Box
+                        key={idx}
+                        sx={{
+                          p: 2,
+                          borderRadius: '12px',
+                          border: '1px solid #f1f5f9',
+                          bgcolor: '#fff',
+                          '&:hover': { borderColor: '#e2e8f0' }
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography sx={{ fontWeight: 700, fontSize: '13px', color: '#3b82f6' }}>
+                            {ticket.ticket_number || `#TKT_UNK`}
+                          </Typography>
+                          <Chip
+                            label={status}
+                            size="small"
+                            sx={{
+                              height: 18,
+                              fontSize: '9px',
+                              fontWeight: 800,
+                              bgcolor: isClosed ? '#dcfce7' : '#fef3c7',
+                              color: isClosed ? '#15803d' : '#d97706'
+                            }}
+                          />
+                        </Box>
+                        <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500 }}>
+                          {`Inquiry regarding ${ticket.communication_channel || 'service'}`}
                         </Typography>
-                        <Chip
-                          label={status}
-                          size="small"
-                          sx={{ 
-                            height: 18, 
-                            fontSize: '9px', 
-                            fontWeight: 800, 
-                            bgcolor: isClosed ? '#dcfce7' : '#fef3c7', 
-                            color: isClosed ? '#15803d' : '#d97706' 
-                          }}
-                        />
                       </Box>
-                      <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500 }}>
-                        {`Inquiry regarding ${ticket.communication_channel || 'service'}`}
-                      </Typography>
-                    </Box>
-                  );
-                })
-              )}
-            </Stack>
-          </Paper>
+                    );
+                  })
+                )}
+              </Stack>
+            </Paper>
           </Box>
         </Box>
       </Box>

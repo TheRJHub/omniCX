@@ -210,7 +210,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
     setLoadingDetails(true);
     try {
       const cleanTicketNo = ticketNo.replace('#', '');
-      const response = await fetch(`http://164.52.196.197:8099/tickets/${cleanTicketNo}`);
+      const response = await fetch(`${import.meta.env.OMNICX_URL}/tickets/${cleanTicketNo}`);
       const data = await response.json();
       setSelectedTicketDetails(data.ticket || data);
     } catch (error) {
@@ -225,7 +225,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
     const fetchTickets = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://164.52.196.197:8099/tickets');
+        const response = await fetch(`${import.meta.env.OMNICX_URL}/tickets`);
         const data = await response.json();
         console.log("Raw API Response from /tickets:", data);
 
