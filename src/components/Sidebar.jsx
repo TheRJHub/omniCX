@@ -8,7 +8,6 @@ import {
   Typography,
   Divider,
   Tooltip,
-  useMediaQuery,
   useTheme,
   IconButton,
 } from '@mui/material';

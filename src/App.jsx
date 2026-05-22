@@ -52,17 +52,22 @@ function PlaceholderPage({ label }) {
 export default function App() {
   const [activeNav, setActiveNavState] = useState('tickets');
 
+  const [visited, setVisited] = useState(new Set(['tickets']));
+
   const setActiveNav = (nav) => {
     window.history.pushState({ activeNav: nav }, '', window.location.pathname);
     setActiveNavState(nav);
+    setVisited((prev) => new Set(prev).add(nav));
   };
 
   useEffect(() => {
     const handlePopState = (event) => {
       if (event.state && event.state.activeNav) {
         setActiveNavState(event.state.activeNav);
+        setVisited((prev) => new Set(prev).add(event.state.activeNav));
       } else {
         setActiveNavState('tickets');
+        setVisited((prev) => new Set(prev).add('tickets'));
       }
     };
     
@@ -85,16 +90,6 @@ export default function App() {
   const handleCustomerClick = (customer) => {
     setSelectedCustomer(customer);
     setActiveNav('customer360');
-  };
-
-  const renderContent = () => {
-    if (activeNav === 'agentic') return <AgenticOperations />;
-    if (activeNav === 'performance') return <ChannelPerformance />;
-    if (activeNav === 'tickets') return <TicketManagement onTicketClick={handleTicketClick} onCustomerClick={handleCustomerClick} />;
-    if (activeNav === 'journey') return <CustomerJourney selectedCustomer={selectedCustomer} />;
-    if (activeNav === 'customer360') return <Customer360 selectedCustomer={selectedCustomer} />;
-    if (activeNav === 'orchestration') return <AgentOrchestration />;
-    return <PlaceholderPage label={PAGE_LABELS[activeNav]} />;
   };
 
   return (
@@ -150,7 +145,29 @@ export default function App() {
           )}
 
           <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0, display: 'flex', flexDirection: 'column' }}>
-            {renderContent()}
+            <Box sx={{ display: activeNav === 'agentic' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
+              {visited.has('agentic') && <AgenticOperations />}
+            </Box>
+            <Box sx={{ display: activeNav === 'performance' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
+              {visited.has('performance') && <ChannelPerformance />}
+            </Box>
+            <Box sx={{ display: activeNav === 'tickets' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
+              {visited.has('tickets') && <TicketManagement onTicketClick={handleTicketClick} onCustomerClick={handleCustomerClick} />}
+            </Box>
+            <Box sx={{ display: activeNav === 'journey' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
+              {visited.has('journey') && <CustomerJourney selectedCustomer={selectedCustomer} />}
+            </Box>
+            <Box sx={{ display: activeNav === 'customer360' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
+              {visited.has('customer360') && <Customer360 selectedCustomer={selectedCustomer} />}
+            </Box>
+            <Box sx={{ display: activeNav === 'orchestration' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
+              {visited.has('orchestration') && <AgentOrchestration />}
+            </Box>
+            {!['agentic', 'performance', 'tickets', 'journey', 'customer360', 'orchestration'].includes(activeNav) && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <PlaceholderPage label={PAGE_LABELS[activeNav]} />
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>
