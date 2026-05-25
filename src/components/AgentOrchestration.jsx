@@ -249,7 +249,7 @@ export default function AgentOrchestration() {
         <Box sx={{ height: '100%' }}>
           <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ p: 2, px: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
-              <Typography sx={{ fontWeight: 700, fontSize: '15px' }}>Sub-Agent Fleet Performance</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: '16px', color: '#0f172a' }}>Sub-Agent Fleet Performance</Typography>
               <Chip label="Last 1 hour" size="small" variant="outlined" sx={{ borderRadius: '6px', color: '#64748b', height: 24, fontSize: '12px' }} />
             </Box>
             <TableContainer sx={{ flexGrow: 1, overflow: 'auto' }}>
@@ -271,15 +271,15 @@ export default function AgentOrchestration() {
                           <Avatar sx={{ width: 24, height: 24, bgcolor: `${row.color}15`, color: row.color, borderRadius: '6px' }}>
                             <HubRoundedIcon sx={{ fontSize: 14 }} />
                           </Avatar>
-                          <Typography sx={{ fontWeight: 600, fontSize: '13px', color: '#0f172a' }}>{row.process}</Typography>
+                          <Typography sx={{ fontWeight: 600, fontSize: '14px', color: '#0f172a' }}>{row.process}</Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell sx={{ fontSize: '13px', fontWeight: 500, color: '#475569', py: 1.5 }}>{row.executions}</TableCell>
-                      <TableCell sx={{ fontSize: '13px', fontWeight: 600, color: '#16a34a', py: 1.5 }}>{row.latency}</TableCell>
-                      <TableCell sx={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', py: 1.5 }}>{row.success}</TableCell>
+                      <TableCell sx={{ fontSize: '14px', fontWeight: 500, color: '#475569', py: 1.5 }}>{row.executions}</TableCell>
+                      <TableCell sx={{ fontSize: '14px', fontWeight: 600, color: '#16a34a', py: 1.5 }}>{row.latency}</TableCell>
+                      <TableCell sx={{ fontSize: '14px', fontWeight: 700, color: '#0f172a', py: 1.5 }}>{row.success}</TableCell>
                       <TableCell sx={{ py: 1.5 }}>
                         <Stack direction="row" spacing={1} alignItems="center">
-                          <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#64748b', width: 32 }}>{row.confidence}</Typography>
+                          <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#64748b', width: 32 }}>{row.confidence}</Typography>
                           {row.confidence !== 'N/A' && (
                             <Box sx={{ width: 48, height: 6, bgcolor: '#f1f5f9', borderRadius: 3 }}>
                               <Box sx={{ width: row.confidence, height: '100%', bgcolor: '#3b82f6', borderRadius: 3 }} />
@@ -299,7 +299,7 @@ export default function AgentOrchestration() {
       {/* Bottom Metrics Section */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
         {/* Top Row: Metrics & Infra */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr' }, gap: 2 }}>
           {/* Left: Agent Metrics */}
           <Box>
             <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -307,8 +307,8 @@ export default function AgentOrchestration() {
                 <TimelineRoundedIcon sx={{ color: '#0052cc', fontSize: 24 }} />
                 <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a' }}>Agent Performance Metrics</Typography>
               </Stack>
-              <Stack spacing={2} sx={{ flexGrow: 1, justifyContent: 'center' }}>
-                <Box sx={{ p: 2.5, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ flexGrow: 1, justifyContent: 'center' }}>
+                <Box sx={{ p: 2.5, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9', flex: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                     <Typography sx={{ fontWeight: 700, fontSize: '16px', color: '#0f172a' }}>Omni-Router Agent</Typography>
                     <Typography sx={{ color: omniMetrics.status === 'Running' ? '#10b981' : (omniMetrics.status ? '#f59e0b' : '#64748b'), fontSize: '14px', fontWeight: 600 }}>• {omniMetrics.status ?? '—'}</Typography>
@@ -320,7 +320,7 @@ export default function AgentOrchestration() {
                     <Typography sx={{ fontSize: '15px', color: '#64748b' }}>Checkpoints Stored: <Box component="span" sx={{ fontWeight: 700, color: '#0f172a' }}>{omniMetrics.checkpoints_stored?.toLocaleString() ?? '—'}</Box></Typography>
                   </Box>
                 </Box>
-                <Box sx={{ p: 2.5, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                <Box sx={{ p: 2.5, borderRadius: '8px', bgcolor: '#f8fafc', border: '1px solid #f1f5f9', flex: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                     <Typography sx={{ fontWeight: 700, fontSize: '16px', color: '#0f172a' }}>Accelr8cx Email Agent</Typography>
                     <Typography sx={{ color: orchestrationData?.email_agent?.status === 'Running' ? '#10b981' : '#64748b', fontSize: '14px', fontWeight: 600 }}>• {orchestrationData?.email_agent?.status ?? '—'}</Typography>
@@ -335,72 +335,10 @@ export default function AgentOrchestration() {
             </Paper>
           </Box>
 
-          {/* Middle: Infra */}
-          <Box>
-            <Stack spacing={2} sx={{ height: '100%' }}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}>
-                  <DnsRoundedIcon sx={{ color: '#8b5cf6', fontSize: 24 }} />
-                  <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a' }}>Event Bus (Kafka)</Typography>
-                </Stack>
-                <Typography sx={{ fontSize: '15px', color: orchestrationData?.event_bus?.status === 'Healthy' ? '#10b981' : '#64748b', fontWeight: 700, mb: 2 }}>• {orchestrationData?.event_bus?.status ?? '—'}</Typography>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                  <Box sx={{ flex: 1, bgcolor: '#f8fafc', p: 2, borderRadius: '8px', textAlign: 'center' }}>
-                    <Typography sx={{ fontSize: '15px', color: '#64748b', mb: 0.5 }}>Topics</Typography>
-                    <Typography sx={{ fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>{orchestrationData?.event_bus?.topics ?? '—'}</Typography>
-                  </Box>
-                  <Box sx={{ flex: 1, bgcolor: '#f8fafc', p: 2, borderRadius: '8px', textAlign: 'center' }}>
-                    <Typography sx={{ fontSize: '15px', color: '#64748b', mb: 0.5 }}>Messages/sec</Typography>
-                    <Typography sx={{ fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>{orchestrationData?.event_bus?.messages_per_sec ?? '—'}</Typography>
-                  </Box>
-                  <Box sx={{ flex: 1, bgcolor: '#f8fafc', p: 2, borderRadius: '8px', textAlign: 'center' }}>
-                    <Typography sx={{ fontSize: '15px', color: '#64748b', mb: 0.5 }}>Lag</Typography>
-                    <Typography sx={{ fontWeight: 800, fontSize: '18px', color: '#10b981' }}>{orchestrationData?.event_bus?.lag_ms !== undefined ? `<${orchestrationData.event_bus.lag_ms}ms` : '—'}</Typography>
-                  </Box>
-                </Box>
-              </Paper>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 2 }}>
-                  <StorageRoundedIcon sx={{ color: '#ea580c', fontSize: 24 }} />
-                  <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a' }}>Context Store</Typography>
-                </Stack>
-                <Stack spacing={2} sx={{ flexGrow: 1, justifyContent: 'center' }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                    <Typography sx={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}><Box component="span" sx={{ color: '#10b981', mr: 1 }}>•</Box>Redis (Fast Context)</Typography>
-                    <Typography sx={{ fontSize: '14px', color: '#64748b' }}>{orchestrationData?.context_store?.redis?.used_gb !== undefined ? `${orchestrationData.context_store.redis.used_gb}GB used | ${orchestrationData.context_store.redis.avg_latency_ms}ms avg latency` : '—'}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, bgcolor: '#f8fafc', borderRadius: '8px', border: '1px solid #f1f5f9' }}>
-                    <Typography sx={{ fontSize: '15px', fontWeight: 600, color: '#0f172a' }}><Box component="span" sx={{ color: '#10b981', mr: 1 }}>•</Box>PostgreSQL (Long Term)</Typography>
-                    <Typography sx={{ fontSize: '14px', color: '#64748b' }}>{orchestrationData?.context_store?.postgres?.connections !== undefined ? `Conn: ${orchestrationData.context_store.postgres.connections} | Query: ${orchestrationData.context_store.postgres.query_ms}ms` : '—'}</Typography>
-                  </Box>
-                </Stack>
-              </Paper>
-            </Stack>
-          </Box>
+
         </Box>
 
-        {/* Bottom Row: Events */}
-        <Box sx={{ width: '100%' }}>
-          <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 3 }}>
-              <ErrorOutlineRoundedIcon sx={{ color: '#dc2626', fontSize: 24 }} />
-              <Typography sx={{ fontWeight: 700, fontSize: '18px', color: '#0f172a' }}>Recent Orchestration Events (Last 1 hour)</Typography>
-            </Stack>
-            <Stack spacing={2}>
-              {orchestrationData?.events?.length > 0 ? orchestrationData.events.map((ev, i) => (
-                <Box key={i} sx={{ p: 2, borderRadius: '8px', bgcolor: ev.type === 'error' ? '#fef2f2' : '#fefce8', border: `1px solid ${ev.type === 'error' ? '#fecaca' : '#fef08a'}`, display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
-                  <AccessTimeRoundedIcon sx={{ color: ev.type === 'error' ? '#dc2626' : '#ca8a04', fontSize: 18, mt: 0.2 }} />
-                  <Box>
-                    <Typography sx={{ fontWeight: 600, color: ev.type === 'error' ? '#b91c1c' : '#a16207', fontSize: '14px', mb: 0.5 }}>{ev.title}</Typography>
-                    <Typography sx={{ fontSize: '14px', color: ev.type === 'error' ? '#dc2626' : '#ca8a04' }}>{ev.description}</Typography>
-                  </Box>
-                </Box>
-              )) : (
-                <Typography sx={{ color: '#64748b', fontSize: '14px' }}>—</Typography>
-              )}
-            </Stack>
-          </Paper>
-        </Box>
+
       </Box>
     </Box>
   );

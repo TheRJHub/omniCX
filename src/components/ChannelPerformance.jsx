@@ -27,6 +27,18 @@ import PeopleOutlineRoundedIcon from '@mui/icons-material/PeopleOutlineRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 
 const API_BASE = `${import.meta.env.OMNICX_URL}/dashboard/channel-performance`;
 
@@ -63,72 +75,72 @@ function buildTrend(delta, isGoodWhenDown = false) {
 function VolumeByChannelChart({ data }) {
   if (!data || data.length === 0) return null;
 
-  const CHANNEL_COLORS = {
-    chat: '#3b82f6',
-    email: '#8b5cf6',
-    voice: '#f97316',
-    human: '#1e293b',
-  };
-
-  const maxVal = Math.max(...data.map(d => d.chat + d.email + d.voice + d.human), 1);
-  const H = 180;
-  const W = 800;
-  const xStep = data.length > 1 ? W / (data.length - 1) : W;
-
-  function makePath(key) {
-    const pts = data.map((d, i) => {
-      const x = i * xStep;
-      const y = H - (d[key] / maxVal) * (H - 20);
-      return `${x},${y}`;
-    });
-    const line = `M${pts.join(' L')}`;
-    const area = `${line} L${W},${H} L0,${H} Z`;
-    return { line, area };
-  }
-
-  const channels = ['email', 'voice', 'human', 'chat'];
-
   return (
-    <Box sx={{ width: '100%', flexGrow: 1, minHeight: 180, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-      <Box sx={{ flexGrow: 1, position: 'relative', minHeight: 140 }}>
-        <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-          <defs>
-            {channels.map(ch => (
-              <linearGradient key={ch} id={`grad-${ch}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={CHANNEL_COLORS[ch]} stopOpacity="0.35" />
-                <stop offset="100%" stopColor={CHANNEL_COLORS[ch]} stopOpacity="0" />
+    <Box sx={{ width: '100%', height: 320, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart
+            data={data}
+            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+          >
+            <defs>
+              <linearGradient id="colorChat" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.2} />
               </linearGradient>
-            ))}
-          </defs>
-          {[0, 45, 90, 135].map(y => (
-            <line key={y} x1="0" y1={y} x2={W} y2={y} stroke="#f1f5f9" strokeDasharray="4 4" />
-          ))}
-          {channels.map(ch => {
-            const { line, area } = makePath(ch);
-            return (
-              <g key={ch}>
-                <path d={area} fill={`url(#grad-${ch})`} />
-                <path d={line} fill="none" stroke={CHANNEL_COLORS[ch]} strokeWidth="2" />
-              </g>
-            );
-          })}
-        </svg>
+              <linearGradient id="colorEmail" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.2} />
+              </linearGradient>
+              <linearGradient id="colorHuman" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#1e293b" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#1e293b" stopOpacity={0.2} />
+              </linearGradient>
+              <linearGradient id="colorVoice" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0.2} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <XAxis
+              dataKey="day"
+              stroke="#94a3b8"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="#94a3b8"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+            />
+            <Tooltip
+              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              labelStyle={{ fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}
+              itemStyle={{ fontWeight: 500 }}
+            />
+            <Area type="monotone" dataKey="chat" name="Chat" stroke="#3b82f6" fill="url(#colorChat)" strokeWidth={2} activeDot={{ r: 6, strokeWidth: 0 }} />
+            <Area type="monotone" dataKey="email" name="Email" stroke="#8b5cf6" fill="url(#colorEmail)" strokeWidth={2} activeDot={{ r: 6, strokeWidth: 0 }} />
+            <Area type="monotone" dataKey="human" name="Human" stroke="#1e293b" fill="url(#colorHuman)" strokeWidth={2} activeDot={{ r: 6, strokeWidth: 0 }} />
+            <Area type="monotone" dataKey="voice" name="Voice" stroke="#f97316" fill="url(#colorVoice)" strokeWidth={2} activeDot={{ r: 6, strokeWidth: 0 }} />
+          </AreaChart>
+        </ResponsiveContainer>
       </Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-        {data.map(d => (
-          <Typography key={d.day} variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{d.day}</Typography>
-        ))}
-      </Box>
-      <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
+
+      {/* Legend */}
+      <Stack direction="row" spacing={3} justifyContent="center" sx={{ mt: 2 }}>
         {[
           { label: 'Chat', color: '#3b82f6' },
           { label: 'Email', color: '#8b5cf6' },
           { label: 'Human', color: '#1e293b' },
           { label: 'Voice', color: '#f97316' },
         ].map(item => (
-          <Box key={item.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: item.color }} />
-            <Typography variant="caption" sx={{ fontWeight: 700, color: item.color }}>{item.label}</Typography>
+          <Box key={item.label} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: item.color }} />
+            <Typography variant="caption" sx={{ fontWeight: 600, color: '#475569' }}>
+              {item.label}
+            </Typography>
           </Box>
         ))}
       </Stack>
@@ -141,30 +153,48 @@ function ResRateByAgentChart({ data }) {
   if (!data || data.length === 0) return null;
 
   return (
-    <Box sx={{ width: '100%', flexGrow: 1, display: 'flex', flexDirection: 'column', pt: 1, minHeight: 160 }}>
-      <Stack spacing={2.5} sx={{ flexGrow: 1, justifyContent: 'center' }}>
-        {data.map(item => {
-          const { color } = getAgentConfig(item.agent);
-          const val = item.resolution_rate ?? 0;
-          return (
-            <Box key={item.agent} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography variant="caption" sx={{ minWidth: 80, fontWeight: 600, color: '#475569' }}>
-                {item.agent}
-              </Typography>
-              <Box sx={{ flexGrow: 1, height: 28, bgcolor: 'transparent', borderRadius: 1, overflow: 'hidden' }}>
-                <Box sx={{ width: `${val}%`, height: '100%', bgcolor: color, borderRadius: 1 }} />
-              </Box>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a', minWidth: 36, textAlign: 'right' }}>
-                {val}%
-              </Typography>
-            </Box>
-          );
-        })}
-      </Stack>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2, px: 0.5 }}>
-        {[0, 25, 50, 75, 100].map(v => (
-          <Typography key={v} variant="caption" sx={{ color: '#94a3b8' }}>{v}</Typography>
-        ))}
+    <Box sx={{ width: '100%', height: 320, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            layout="vertical"
+            data={data}
+            margin={{ top: 10, right: 20, left: 10, bottom: 0 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+            <XAxis
+              type="number"
+              domain={[0, 100]}
+              stroke="#94a3b8"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(val) => val}
+            />
+            <YAxis
+              type="category"
+              dataKey="agent"
+              stroke="#475569"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              width={80}
+            />
+            <Tooltip
+              cursor={{ fill: '#f8fafc' }}
+              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              labelStyle={{ fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}
+              itemStyle={{ fontWeight: 500 }}
+              formatter={(value) => `${value}%`}
+            />
+            <Bar dataKey="resolution_rate" radius={[0, 4, 4, 0]} barSize={28}>
+              {data.map((entry, index) => {
+                const config = getAgentConfig(entry.agent);
+                return <Cell key={`cell-${index}`} fill={config.color} />;
+              })}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </Box>
     </Box>
   );
