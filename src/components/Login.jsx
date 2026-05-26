@@ -11,12 +11,13 @@ import {
     CircularProgress,
     Link,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, DarkMode, LightMode } from "@mui/icons-material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useAuth } from "../Context/AuthContext";
 import { INTELICONVOAPI } from "../utils/axiosInstance";
 import heroImg from "../assets/login screen img.png";
+import { useAuth } from "../Context/AuthContext";
+import { useThemeMode } from "../Context/ThemeContext";
 
 const validationSchema = Yup.object({
     email: Yup.string()
@@ -29,6 +30,7 @@ const validationSchema = Yup.object({
 export default function Login() {
     const navigate = useNavigate();
     const { login } = useAuth();
+    const { isDarkMode, toggleTheme } = useThemeMode();
     const [showPassword, setShowPassword] = useState(false);
     const [serverError, setServerError] = useState("");
 
@@ -66,9 +68,28 @@ export default function Login() {
                 width: "100%",
                 minHeight: "100vh",
                 display: "flex",
-                bgcolor: "#ffffff",
+                bgcolor: isDarkMode ? "#0f172a" : "#ffffff",
+                transition: "background-color 0.3s ease",
+                position: "relative",
             }}
         >
+            {/* Dark Mode Toggle */}
+            <IconButton
+                onClick={toggleTheme}
+                sx={{
+                    position: 'absolute',
+                    top: 24,
+                    right: 24,
+                    zIndex: 10,
+                    color: isDarkMode ? '#f8fafc' : '#64748b',
+                    bgcolor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                    '&:hover': {
+                        bgcolor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                    }
+                }}
+            >
+                {isDarkMode ? <LightMode /> : <DarkMode />}
+            </IconButton>
             {/* Left side - Illustration */}
             <Box
                 sx={{
@@ -88,7 +109,7 @@ export default function Login() {
                         maxWidth: "100%",
                         maxHeight: "94vh", // Keep the image large
                         objectFit: "contain",
-                        border: "4px solid #000000",
+                        border: isDarkMode ? "4px solid #334155" : "4px solid #000000",
                         borderRadius: "2px",
                         display: "block",
                     }}
@@ -120,7 +141,7 @@ export default function Login() {
                             variant="subtitle2"
                             sx={{
                                 mb: 0.5,
-                                color: "#64748b",
+                                color: isDarkMode ? "#cbd5e1" : "#64748b",
                                 fontFamily: "'Inter', sans-serif",
                                 fontWeight: 600,
                                 letterSpacing: "0.2em",
@@ -130,7 +151,7 @@ export default function Login() {
                         >
                             Welcome to
                         </Typography>
-                        
+
                         {/* Logo/Title */}
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b5cf6' }}>
@@ -153,7 +174,7 @@ export default function Login() {
                     )}
 
                     <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ width: "100%" }}>
-                        <Typography sx={{ fontWeight: 600, fontSize: "0.95rem", mb: 1, color: "#64748b" }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: "0.95rem", mb: 1, color: isDarkMode ? "#cbd5e1" : "#64748b" }}>
                             Email Address *
                         </Typography>
                         <TextField
@@ -170,16 +191,17 @@ export default function Login() {
                                 mb: 3,
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "6px",
-                                    bgcolor: "#fff",
+                                    bgcolor: isDarkMode ? "#1e293b" : "#fff",
                                     fontSize: "1.05rem",
                                 },
                                 "& .MuiOutlinedInput-input": {
                                     padding: "18px 14px",
+                                    color: isDarkMode ? "#f8fafc" : "#1e293b",
                                 }
                             }}
                         />
 
-                        <Typography sx={{ fontWeight: 600, fontSize: "0.95rem", mb: 1, color: "#64748b" }}>
+                        <Typography sx={{ fontWeight: 600, fontSize: "0.95rem", mb: 1, color: isDarkMode ? "#cbd5e1" : "#64748b" }}>
                             Password *
                         </Typography>
                         <TextField
@@ -196,11 +218,12 @@ export default function Login() {
                                 mb: 4,
                                 "& .MuiOutlinedInput-root": {
                                     borderRadius: "6px",
-                                    bgcolor: "#fff",
+                                    bgcolor: isDarkMode ? "#1e293b" : "#fff",
                                     fontSize: "1.05rem",
                                 },
                                 "& .MuiOutlinedInput-input": {
                                     padding: "18px 14px",
+                                    color: isDarkMode ? "#f8fafc" : "#1e293b",
                                 }
                             }}
                             slotProps={{
@@ -208,7 +231,7 @@ export default function Login() {
                                     endAdornment: (
                                         <InputAdornment position="end">
                                             <IconButton onClick={() => setShowPassword((v) => !v)} edge="end" size="small">
-                                                {showPassword ? <VisibilityOff fontSize="small" sx={{ color: "#94a3b8" }} /> : <Visibility fontSize="small" sx={{ color: "#94a3b8" }} />}
+                                                {showPassword ? <VisibilityOff fontSize="small" sx={{ color: isDarkMode ? "#cbd5e1" : "#94a3b8" }} /> : <Visibility fontSize="small" sx={{ color: isDarkMode ? "#cbd5e1" : "#94a3b8" }} />}
                                             </IconButton>
                                         </InputAdornment>
                                     ),

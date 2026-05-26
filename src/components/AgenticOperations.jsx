@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, cloneElement } from 'react';
 import {
   Box,
   Typography,
@@ -8,9 +8,9 @@ import {
   Avatar,
   LinearProgress,
   CircularProgress,
-  Alert
+  Alert,
+  useTheme
 } from '@mui/material';
-import { cloneElement } from 'react';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
@@ -21,56 +21,6 @@ import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
 import PhoneInTalkRoundedIcon from '@mui/icons-material/PhoneInTalkRounded';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
-
-const API_BASE = `${import.meta.env.OMNICX_URL}/dashboard/agentic-operations?days=7`;
-
-// Map agent name to icon/color config
-const AGENT_ICON_MAP = {
-  'Chat Agent': {
-    icon: <ChatBubbleOutlineRoundedIcon />,
-    bgcolor: '#eff6ff',
-    color: '#3b82f6'
-  },
-  'Email Agent (Accelr8cx)': {
-    icon: <BoltOutlinedIcon />,
-    bgcolor: '#faf5ff',
-    color: '#a855f7'
-  },
-  'Voice Agent': {
-    icon: <PhoneInTalkRoundedIcon />,
-    bgcolor: '#fff7ed',
-    color: '#f97316'
-  }
-};
-
-function getAgentIconConfig(agentName) {
-  return (
-    AGENT_ICON_MAP[agentName] || {
-      icon: <SmartToyOutlinedIcon />,
-      bgcolor: '#f0fdf4',
-      color: '#10b981'
-    }
-  );
-}
-
-function formatDelta(delta, isGoodWhenDown = false) {
-  if (delta === null || delta === undefined) return null;
-  const isPositive = delta > 0;
-  const sign = isPositive ? '+' : '';
-  const trendType = isPositive ? 'up' : 'down';
-  // For human escalation, going down is good (green), going up is bad (red)
-  let trendColor;
-  if (isGoodWhenDown) {
-    trendColor = isPositive ? '#ef4444' : '#10b981';
-  } else {
-    trendColor = isPositive ? '#10b981' : '#ef4444';
-  }
-  return {
-    text: `${sign}${delta}% from last week`,
-    trendType,
-    trendColor
-  };
-}
 
 import {
   AreaChart,
@@ -84,7 +34,57 @@ import {
   ResponsiveContainer
 } from 'recharts';
 
-function ResolutionVolumeChart({ data }) {
+const API_BASE = `${import.meta.env.VITE_OMNICX_URL || import.meta.env.OMNICX_URL}/dashboard/agentic-operations?days=7`;
+
+// Map agent name to icon/color config
+const getAgentIconMap = (isDark) => ({
+  'Chat Agent': {
+    icon: <ChatBubbleOutlineRoundedIcon />,
+    bgcolor: isDark ? 'rgba(59,130,246,0.15)' : '#eff6ff',
+    color: '#3b82f6'
+  },
+  'Email Agent (Accelr8cx)': {
+    icon: <BoltOutlinedIcon />,
+    bgcolor: isDark ? 'rgba(168,85,247,0.15)' : '#faf5ff',
+    color: '#a855f7'
+  },
+  'Voice Agent': {
+    icon: <PhoneInTalkRoundedIcon />,
+    bgcolor: isDark ? 'rgba(249,115,22,0.15)' : '#fff7ed',
+    color: '#f97316'
+  }
+});
+
+function getAgentIconConfig(agentName, isDark) {
+  const map = getAgentIconMap(isDark);
+  return (
+    map[agentName] || {
+      icon: <SmartToyOutlinedIcon />,
+      bgcolor: isDark ? 'rgba(16,185,129,0.15)' : '#f0fdf4',
+      color: '#10b981'
+    }
+  );
+}
+
+function formatDelta(delta, isGoodWhenDown = false) {
+  if (delta === null || delta === undefined) return null;
+  const isPositive = delta > 0;
+  const sign = isPositive ? '+' : '';
+  const trendType = isPositive ? 'up' : 'down';
+  let trendColor;
+  if (isGoodWhenDown) {
+    trendColor = isPositive ? '#ef4444' : '#10b981';
+  } else {
+    trendColor = isPositive ? '#10b981' : '#ef4444';
+  }
+  return {
+    text: `${sign}${delta}% from last week`,
+    trendType,
+    trendColor
+  };
+}
+
+function ResolutionVolumeChart({ data, isDark }) {
   if (!data || data.length === 0) return null;
 
   return (
@@ -107,25 +107,26 @@ function ResolutionVolumeChart({ data }) {
             </defs>
             <XAxis
               dataKey="day"
-              stroke="#94a3b8"
+              stroke={isDark ? '#64748b' : '#94a3b8'}
               fontSize={12}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              stroke="#94a3b8"
+              stroke={isDark ? '#64748b' : '#94a3b8'}
               fontSize={12}
               tickLine={false}
               axisLine={false}
             />
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e2e8f0'} />
             <Tooltip
-              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-              labelStyle={{ fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}
+              contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: isDark ? '#1e293b' : '#fff', color: isDark ? '#f8fafc' : '#0f172a', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              labelStyle={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', marginBottom: '8px' }}
               itemStyle={{ fontWeight: 500 }}
-              cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+              cursor={{ stroke: isDark ? '#475569' : '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
             />
             <Area
+              isAnimationActive={false}
               type="monotone"
               dataKey="ai_automated"
               name="AI Auto-Resolved"
@@ -136,6 +137,7 @@ function ResolutionVolumeChart({ data }) {
               activeDot={{ r: 6, strokeWidth: 0 }}
             />
             <Area
+              isAnimationActive={false}
               type="monotone"
               dataKey="human_escalated"
               name="Human Escalated"
@@ -153,13 +155,13 @@ function ResolutionVolumeChart({ data }) {
       <Stack direction="row" spacing={3} justifyContent="center" sx={{ mt: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#3b82f6', border: '1px solid #2563eb' }} />
-          <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b' }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
             AI Auto-Resolved
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#f97316', border: '1px solid #ea580c' }} />
-          <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b' }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
             Human Escalated
           </Typography>
         </Box>
@@ -168,7 +170,7 @@ function ResolutionVolumeChart({ data }) {
   );
 }
 
-function ComplexityChart({ data }) {
+function ComplexityChart({ data, isDark }) {
   if (!data || data.length === 0) return null;
 
   return (
@@ -179,16 +181,16 @@ function ComplexityChart({ data }) {
             data={data}
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#334155' : '#e2e8f0'} />
             <XAxis
               dataKey="complexity"
-              stroke="#94a3b8"
+              stroke={isDark ? '#64748b' : '#94a3b8'}
               fontSize={12}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              stroke="#94a3b8"
+              stroke={isDark ? '#64748b' : '#94a3b8'}
               fontSize={12}
               tickLine={false}
               axisLine={false}
@@ -196,13 +198,14 @@ function ComplexityChart({ data }) {
               tickFormatter={(tick) => `${tick}%`}
             />
             <Tooltip
-              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-              labelStyle={{ fontWeight: 600, color: '#0f172a', marginBottom: '8px' }}
+              contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: isDark ? '#1e293b' : '#fff', color: isDark ? '#f8fafc' : '#0f172a', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+              labelStyle={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', marginBottom: '8px' }}
               itemStyle={{ fontWeight: 500 }}
-              cursor={{ fill: '#f8fafc' }}
+              cursor={{ fill: isDark ? '#334155' : '#f8fafc' }}
               formatter={(value) => `${value}%`}
             />
             <Bar
+              isAnimationActive={false}
               dataKey="ai_pct"
               name="AI Handled"
               stackId="a"
@@ -211,6 +214,7 @@ function ComplexityChart({ data }) {
               barSize={40}
             />
             <Bar
+              isAnimationActive={false}
               dataKey="human_pct"
               name="Human Escalated"
               stackId="a"
@@ -226,13 +230,13 @@ function ComplexityChart({ data }) {
       <Stack direction="row" spacing={3} justifyContent="center" sx={{ mt: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: '#3b82f6' }} />
-          <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b' }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
             AI Handled
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Box sx={{ width: 12, height: 12, borderRadius: '2px', bgcolor: '#f97316' }} />
-          <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b' }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary' }}>
             Human Escalated
           </Typography>
         </Box>
@@ -245,6 +249,9 @@ export default function AgenticOperations() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   const fetchData = useCallback(async () => {
     try {
@@ -267,7 +274,6 @@ export default function AgenticOperations() {
     fetchData();
   }, [fetchData]);
 
-  // Re-fetch whenever the tab becomes visible (fixes HMR stale-state)
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') fetchData();
@@ -276,7 +282,6 @@ export default function AgenticOperations() {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [fetchData]);
 
-  // Auto-poll every 60 seconds to stay in sync with live API data
   useEffect(() => {
     const interval = setInterval(() => fetchData(), 60000);
     return () => clearInterval(interval);
@@ -288,7 +293,6 @@ export default function AgenticOperations() {
   const resolutionByComplexity = data?.resolution_by_complexity || [];
   const omniRouterActive = data?.omni_router_active ?? false;
 
-  // Build stat cards from API data
   const totalInteractionsDelta = formatDelta(summary.total_interactions_delta_pct, false);
   const aiResolutionDelta = formatDelta(summary.ai_auto_resolution_delta, false);
   const humanEscalationDelta = formatDelta(summary.human_escalation_delta, true);
@@ -298,30 +302,30 @@ export default function AgenticOperations() {
       label: 'Total Interactions',
       value: summary.total_interactions?.toLocaleString() ?? '—',
       trend: totalInteractionsDelta,
-      icon: <ChatBubbleOutlineRoundedIcon sx={{ color: '#475569', fontSize: 18 }} />,
-      iconBgColor: '#f8fafc'
+      icon: <ChatBubbleOutlineRoundedIcon sx={{ color: isDark ? '#94a3b8' : '#475569', fontSize: 18 }} />,
+      iconBgColor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc'
     },
     {
       label: 'AI Auto-Resolution',
       value: summary.ai_auto_resolution_pct != null ? `${summary.ai_auto_resolution_pct}%` : '—',
-      valueColor: '#2563eb',
+      valueColor: isDark ? '#60a5fa' : '#2563eb',
       trend: aiResolutionDelta,
       icon: <SmartToyOutlinedIcon sx={{ color: '#3b82f6', fontSize: 18 }} />,
-      iconBgColor: '#eff6ff'
+      iconBgColor: isDark ? 'rgba(59,130,246,0.15)' : '#eff6ff'
     },
     {
       label: 'Human Escalation',
       value: summary.human_escalation_pct != null ? `${summary.human_escalation_pct}%` : '—',
       trend: humanEscalationDelta,
       icon: <PersonOutlineRoundedIcon sx={{ color: '#f97316', fontSize: 18 }} />,
-      iconBgColor: '#fff7ed'
+      iconBgColor: isDark ? 'rgba(249,115,22,0.15)' : '#fff7ed'
     },
     {
       label: 'Avg Resolution Time',
       value: summary.avg_resolution_time_display ?? '—',
       subText: `AI: ${summary.avg_ai_resolution_time_display ?? '—'}  Human: ${summary.avg_human_resolution_time_display ?? '—'}`,
       icon: <AccessTimeOutlinedIcon sx={{ color: '#a855f7', fontSize: 18 }} />,
-      iconBgColor: '#faf5ff'
+      iconBgColor: isDark ? 'rgba(168,85,247,0.15)' : '#faf5ff'
     }
   ];
 
@@ -330,7 +334,7 @@ export default function AgenticOperations() {
       sx={{
         flexGrow: 1,
         p: { xs: 1.5, md: 2.5 },
-        bgcolor: '#f8fafc',
+        bgcolor: 'background.default',
         display: 'flex',
         flexDirection: 'column',
         gap: 2,
@@ -339,7 +343,7 @@ export default function AgenticOperations() {
     >
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: '#0f172a' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: 'text.primary' }}>
           Agentic Operations Dashboard
           {loading && <CircularProgress size={16} sx={{ ml: 2 }} />}
         </Typography>
@@ -348,11 +352,12 @@ export default function AgenticOperations() {
           label={omniRouterActive ? 'Omni-Router Agent Active' : 'Omni-Router Agent Inactive'}
           size="small"
           sx={{
-            bgcolor: omniRouterActive ? '#eff6ff' : '#f1f5f9',
-            color: omniRouterActive ? '#1e40af' : '#64748b',
+            bgcolor: omniRouterActive ? (isDark ? 'rgba(59,130,246,0.1)' : '#eff6ff') : (isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9'),
+            color: omniRouterActive ? (isDark ? '#60a5fa' : '#1e40af') : 'text.secondary',
             fontWeight: 600,
             borderRadius: '6px',
-            border: `1px solid ${omniRouterActive ? '#dbeafe' : '#e2e8f0'}`,
+            border: `1px solid ${omniRouterActive ? (isDark ? 'rgba(59,130,246,0.2)' : '#dbeafe') : 'transparent'}`,
+            borderColor: omniRouterActive ? '' : 'divider',
             height: 24
           }}
         />
@@ -379,14 +384,16 @@ export default function AgenticOperations() {
             sx={{
               p: 2,
               borderRadius: '12px',
-              border: '1px solid #e2e8f0',
+              border: '1px solid',
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
               height: '100%',
               display: 'flex',
               flexDirection: 'column'
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 1 }}>
-              <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', fontSize: '13px', lineHeight: 1.2 }}>
+              <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '13px', lineHeight: 1.2 }}>
                 {stat.label}
               </Typography>
               <Avatar sx={{ width: 32, height: 32, bgcolor: stat.iconBgColor, borderRadius: '8px', flexShrink: 0 }}>
@@ -398,7 +405,7 @@ export default function AgenticOperations() {
               variant="h4"
               sx={{
                 fontWeight: 800,
-                color: stat.valueColor || '#0f172a',
+                color: stat.valueColor || 'text.primary',
                 mb: 1,
                 fontSize: { xs: '24px', xl: '32px' }
               }}
@@ -426,7 +433,7 @@ export default function AgenticOperations() {
                   variant="caption"
                   sx={{
                     fontWeight: 600,
-                    color: '#64748b',
+                    color: 'text.secondary',
                     fontSize: '12px',
                     display: 'block',
                     letterSpacing: '-0.02em'
@@ -442,7 +449,7 @@ export default function AgenticOperations() {
 
       {/* Active AI Agents Section */}
       <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: '#0f172a' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, color: 'text.primary' }}>
           Active AI Agents
         </Typography>
         <Box
@@ -453,7 +460,7 @@ export default function AgenticOperations() {
           }}
         >
           {activeAgents.map((agent, idx) => {
-            const config = getAgentIconConfig(agent.agent);
+            const config = getAgentIconConfig(agent.agent, isDark);
             const resRate = agent.resolution_rate ?? 0;
             return (
               <Paper
@@ -462,7 +469,9 @@ export default function AgenticOperations() {
                 sx={{
                   p: 2.5,
                   borderRadius: '12px',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
                   display: 'flex',
                   gap: 2,
                   alignItems: 'flex-start'
@@ -486,7 +495,7 @@ export default function AgenticOperations() {
                       variant="body2"
                       sx={{
                         fontWeight: 700,
-                        color: '#0f172a',
+                        color: 'text.primary',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis'
@@ -519,7 +528,7 @@ export default function AgenticOperations() {
                   <Typography
                     variant="caption"
                     sx={{
-                      color: '#64748b',
+                      color: 'text.secondary',
                       display: 'block',
                       mb: 2.5,
                       whiteSpace: 'nowrap',
@@ -531,10 +540,10 @@ export default function AgenticOperations() {
                   </Typography>
 
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#64748b', fontSize: '11px' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '11px' }}>
                       Resolution Rate
                     </Typography>
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '12px' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '12px' }}>
                       {resRate}%
                     </Typography>
                   </Box>
@@ -544,7 +553,7 @@ export default function AgenticOperations() {
                     sx={{
                       height: 4,
                       borderRadius: 2,
-                      bgcolor: '#f1f5f9',
+                      bgcolor: isDark ? 'rgba(255,255,255,0.1)' : '#f1f5f9',
                       '& .MuiLinearProgress-bar': { borderRadius: 2, bgcolor: config.color }
                     }}
                   />
@@ -570,23 +579,25 @@ export default function AgenticOperations() {
           sx={{
             p: 2,
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
             height: '100%',
             display: 'flex',
             flexDirection: 'column'
           }}
         >
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
             Resolution Volume
           </Typography>
           <Typography
             variant="caption"
-            sx={{ color: '#64748b', mb: 1, display: 'block', fontSize: '11px' }}
+            sx={{ color: 'text.secondary', mb: 1, display: 'block', fontSize: '11px' }}
           >
             AI Automated vs Human Escalated
           </Typography>
           <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-            <ResolutionVolumeChart data={resolutionVolume} />
+            <ResolutionVolumeChart data={resolutionVolume} isDark={isDark} />
           </Box>
         </Paper>
 
@@ -595,23 +606,25 @@ export default function AgenticOperations() {
           sx={{
             p: 2,
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
             height: '100%',
             display: 'flex',
             flexDirection: 'column'
           }}
         >
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
             Resolution by Complexity
           </Typography>
           <Typography
             variant="caption"
-            sx={{ color: '#64748b', mb: 1, display: 'block', fontSize: '11px' }}
+            sx={{ color: 'text.secondary', mb: 1, display: 'block', fontSize: '11px' }}
           >
             How Omni-Router distributes workload (%)
           </Typography>
           <Box sx={{ flexGrow: 1, minHeight: 0 }}>
-            <ComplexityChart data={resolutionByComplexity} />
+            <ComplexityChart data={resolutionByComplexity} isDark={isDark} />
           </Box>
         </Paper>
       </Box>

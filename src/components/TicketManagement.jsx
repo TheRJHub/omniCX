@@ -27,6 +27,7 @@ import {
   FormControl,
   Select,
   InputLabel,
+  useTheme
 } from '@mui/material';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
@@ -37,50 +38,61 @@ import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import SmartToyRoundedIcon from '@mui/icons-material/SmartToyRounded';
 
-const STATUS_CONFIG = {
-  'ai-resolved': {
-    label: 'AI Resolved',
-    bg: '#dcfce7',
-    color: '#15803d',
+const getStatusConfig = (status, isDark) => {
+  const configs = {
+    'ai-resolved': {
+      label: 'AI Resolved',
+      bg: isDark ? 'rgba(21,128,61,0.15)' : '#dcfce7',
+      color: isDark ? '#4ade80' : '#15803d',
+      icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
+    },
+    'ai-processing': {
+      label: 'AI Processing',
+      bg: isDark ? 'rgba(124,58,237,0.15)' : '#ede9fe',
+      color: isDark ? '#a78bfa' : '#7c3aed',
+      icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
+    },
+    'in-progress': {
+      label: 'In Progress',
+      bg: isDark ? 'rgba(217,119,6,0.15)' : '#fef3c7',
+      color: isDark ? '#fbbf24' : '#d97706',
+      icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
+    },
+    'pending': {
+      label: 'Pending',
+      bg: isDark ? 'rgba(217,119,6,0.15)' : '#fef3c7',
+      color: isDark ? '#fbbf24' : '#d97706',
+      icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
+    },
+    'closed': {
+      label: 'Closed',
+      bg: isDark ? 'rgba(21,128,61,0.15)' : '#dcfce7',
+      color: isDark ? '#4ade80' : '#15803d',
+      icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
+    },
+    'open': {
+      label: 'Open',
+      bg: isDark ? 'rgba(29,78,216,0.15)' : '#dbeafe',
+      color: isDark ? '#60a5fa' : '#1d4ed8',
+      icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
+    }
+  };
+  return configs[status] || {
+    label: status,
+    bg: isDark ? 'rgba(255,255,255,0.1)' : '#f1f5f9',
+    color: isDark ? '#cbd5e1' : '#475569',
     icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
-  },
-  'ai-processing': {
-    label: 'AI Processing',
-    bg: '#ede9fe',
-    color: '#7c3aed',
-    icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
-  },
-  'in-progress': {
-    label: 'In Progress',
-    bg: '#fef3c7',
-    color: '#d97706',
-    icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
-  },
-  'pending': {
-    label: 'Pending',
-    bg: '#fef3c7',
-    color: '#d97706',
-    icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
-  },
-  'closed': {
-    label: 'Closed',
-    bg: '#dcfce7',
-    color: '#15803d',
-    icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
-  },
-  'open': {
-    label: 'Open',
-    bg: '#dbeafe',
-    color: '#1d4ed8',
-    icon: <PersonRoundedIcon sx={{ fontSize: 13 }} />,
-  }
+  };
 };
 
-const TIER_CONFIG = {
-  premium: { bg: '#dbeafe', color: '#1d4ed8' },
-  standard: { bg: '#f1f5f9', color: '#475569' },
-  enterprise: { bg: '#faf5ff', color: '#7e22ce' },
-  b2b: { bg: '#ecfdf5', color: '#065f46' },
+const getTierConfig = (tier, isDark) => {
+  const configs = {
+    premium: { bg: isDark ? 'rgba(29,78,216,0.15)' : '#dbeafe', color: isDark ? '#60a5fa' : '#1d4ed8' },
+    standard: { bg: isDark ? 'rgba(255,255,255,0.1)' : '#f1f5f9', color: isDark ? '#cbd5e1' : '#475569' },
+    enterprise: { bg: isDark ? 'rgba(126,34,206,0.15)' : '#faf5ff', color: isDark ? '#c084fc' : '#7e22ce' },
+    b2b: { bg: isDark ? 'rgba(6,95,70,0.15)' : '#ecfdf5', color: isDark ? '#34d399' : '#065f46' },
+  };
+  return configs[tier] || configs['standard'];
 };
 
 const AGENT_ICONS = {
@@ -90,24 +102,19 @@ const AGENT_ICONS = {
   person: <PersonRoundedIcon sx={{ fontSize: 16 }} />,
 };
 
-const AGENT_COLORS = {
-  phone: '#f97316',
-  chat: '#8b5cf6',
-  email: '#6366f1',
-  person: '#374151',
+const getAgentColor = (iconName, isDark) => {
+  const colors = {
+    phone: '#f97316',
+    chat: '#8b5cf6',
+    email: '#6366f1',
+    person: isDark ? '#94a3b8' : '#374151',
+  };
+  return colors[iconName] || (isDark ? '#94a3b8' : '#374151');
 };
 
-// API Integration placeholder - To be filled when API details are provided
-// const API_URL = '';
-// const API_KEY = '';
-
-/**
- * Transforms raw API data into the format expected by the TicketTable UI
- */
 const transformTicketData = (rawData) => {
   if (!rawData) return [];
   return rawData.map(item => {
-    // Map communication_channel
     let agentName = 'Email Agent';
     let agentIcon = 'email';
 
@@ -124,10 +131,8 @@ const transformTicketData = (rawData) => {
       agentName = item.communication_channel;
     }
 
-    // Map status dynamically
     let status = item.ticket_status || 'In Progress';
 
-    // Map customer email to derive name and initials if possible
     const emailStr = item.customer_email || `customer${item.cust_id || ''}@example.com`;
     const namePart = emailStr.split('@')[0];
     const name = namePart.replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -138,20 +143,20 @@ const transformTicketData = (rawData) => {
       customer: {
         name: name,
         initials: initials,
-        tier: 'Standard', // API does not provide tier
+        tier: 'Standard',
         tierType: 'standard',
         email: item.customer_email || null,
         phone: null,
         custId: item.cust_id
       },
-      subject: `Inquiry regarding ${item.communication_channel || 'service'}`, // Fallback subject
+      subject: `Inquiry regarding ${item.communication_channel || 'service'}`,
       intent: {
         label: `Customer Query`,
         type: 'intent'
       },
       agent: { name: agentName, icon: agentIcon },
       status: status,
-      raw: item // Keep raw item for Dialog
+      raw: item
     };
   });
 };
@@ -161,7 +166,7 @@ function ActionsMenu({ onViewDetails }) {
   return (
     <>
       <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}>
-        <MoreHorizRoundedIcon fontSize="small" sx={{ color: '#94a3b8' }} />
+        <MoreHorizRoundedIcon fontSize="small" sx={{ color: 'text.secondary' }} />
       </IconButton>
       <Menu
         anchorEl={anchor}
@@ -183,11 +188,12 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
 
-  // Pagination state
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
   const [page, setPage] = useState(() => parseInt(sessionStorage.getItem('ticketPage')) || 1);
   const rowsPerPage = 6;
 
-  // Filter state
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
   const [agentFilter, setAgentFilter] = useState('All');
@@ -202,7 +208,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
-    setPage(1); // Reset page to 1 only when user types
+    setPage(1);
   };
 
   const handleViewDetails = async (ticketNo) => {
@@ -210,7 +216,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
     setLoadingDetails(true);
     try {
       const cleanTicketNo = ticketNo.replace('#', '');
-      const response = await fetch(`${import.meta.env.OMNICX_URL}/tickets/${cleanTicketNo}`);
+      const response = await fetch(`${import.meta.env.VITE_OMNICX_URL || import.meta.env.OMNICX_URL}/tickets/${cleanTicketNo}`);
       const data = await response.json();
       setSelectedTicketDetails(data.ticket || data);
     } catch (error) {
@@ -225,9 +231,8 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
     const fetchTickets = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${import.meta.env.OMNICX_URL}/tickets`);
+        const response = await fetch(`${import.meta.env.VITE_OMNICX_URL || import.meta.env.OMNICX_URL}/tickets`);
         const data = await response.json();
-        console.log("Raw API Response from /tickets:", data);
 
         let ticketsArray = [];
         if (Array.isArray(data)) {
@@ -237,28 +242,20 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
         } else if (data && Array.isArray(data.data)) {
           ticketsArray = data.data;
         } else if (data && typeof data === 'object') {
-          // Fallback: look for any array in the response values
           const possibleArray = Object.values(data).find(val => Array.isArray(val));
           if (possibleArray) {
             ticketsArray = possibleArray;
           } else {
-            // If it's a single object that might be a ticket
             ticketsArray = [data];
           }
         }
-
-        console.log("Extracted Tickets Array:", ticketsArray);
         
         const transformedTickets = transformTicketData(ticketsArray);
         
-        // Sort tickets sequentially by ticket ID (e.g. TKT_001, TKT_002, ...)
         transformedTickets.sort((a, b) => {
           const numA = parseInt(a.id.replace(/\D/g, ''), 10) || 0;
           const numB = parseInt(b.id.replace(/\D/g, ''), 10) || 0;
-          
-          if (numA !== numB) {
-             return numA - numB;
-          }
+          if (numA !== numB) return numA - numB;
           return a.id.localeCompare(b.id);
         });
 
@@ -294,14 +291,14 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
   const paginatedTickets = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   return (
-    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: '#f1f5f9' }}>
-      {/* Page Header */}
+    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
       <Box
         sx={{
           px: { xs: 2, md: 4 },
           py: 3,
-          bgcolor: '#fff',
-          borderBottom: '1px solid #e2e8f0',
+          bgcolor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -309,7 +306,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
           gap: 2,
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: '#0f172a' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: 'text.primary' }}>
           Accelr8cx Ticket Management
         </Typography>
 
@@ -321,98 +318,92 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
             size="small"
             startAdornment={
               <InputAdornment position="start">
-                <SearchRoundedIcon sx={{ color: '#94a3b8', fontSize: 18 }} />
+                <SearchRoundedIcon sx={{ color: 'text.secondary', fontSize: 18 }} />
               </InputAdornment>
             }
             sx={{
               width: { xs: '100%', sm: 240 },
               borderRadius: '8px',
               fontSize: '13px',
-              bgcolor: '#f8fafc',
-              '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
-              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
+              bgcolor: 'background.default',
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: 'divider' },
+              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: isDark ? '#475569' : '#cbd5e1' },
               '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#3b82f6', borderWidth: '1.5px' },
             }}
           />
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={(e) => setFilterAnchorEl(e.currentTarget)}
-              startIcon={<FilterListRoundedIcon fontSize="small" />}
-              sx={{
-                borderRadius: '8px',
-                borderColor: '#e2e8f0',
-                color: '#475569',
-                fontSize: '13px',
-                fontWeight: 500,
-                bgcolor: '#f8fafc',
-                '&:hover': { bgcolor: '#f1f5f9', borderColor: '#cbd5e1' },
-                whiteSpace: 'nowrap',
-              }}
-            >
-              Filter
-            </Button>
-            
-            <Popover
-              open={Boolean(filterAnchorEl)}
-              anchorEl={filterAnchorEl}
-              onClose={() => setFilterAnchorEl(null)}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              PaperProps={{
-                sx: { mt: 1, p: 2, width: 240, borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, color: '#0f172a' }}>Filter Tickets</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <FormControl size="small" fullWidth>
-                  <InputLabel sx={{ fontSize: '13px' }}>Status</InputLabel>
-                  <Select
-                    value={statusFilter}
-                    label="Status"
-                    onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                    sx={{ fontSize: '13px', borderRadius: '8px' }}
-                  >
-                    <MenuItem value="All">All Statuses</MenuItem>
-                    <MenuItem value="Open">Open</MenuItem>
-                    <MenuItem value="Pending">Pending</MenuItem>
-                    <MenuItem value="In Progress">In Progress</MenuItem>
-                    <MenuItem value="Closed">Closed</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl size="small" fullWidth>
-                  <InputLabel sx={{ fontSize: '13px' }}>Agent</InputLabel>
-                  <Select
-                    value={agentFilter}
-                    label="Agent"
-                    onChange={(e) => { setAgentFilter(e.target.value); setPage(1); }}
-                    sx={{ fontSize: '13px', borderRadius: '8px' }}
-                  >
-                    <MenuItem value="All">All Agents</MenuItem>
-                    <MenuItem value="Chat Agent">Chat Agent</MenuItem>
-                    <MenuItem value="Voice Agent">Voice Agent</MenuItem>
-                    <MenuItem value="Email Agent">Email Agent</MenuItem>
-                    <MenuItem value="Human Agent">Human Agent</MenuItem>
-                  </Select>
-                </FormControl>
-                <Button 
-                  variant="text" 
-                  size="small" 
-                  onClick={() => { setStatusFilter('All'); setAgentFilter('All'); setPage(1); }}
-                  sx={{ textTransform: 'none', fontWeight: 600, mt: 1 }}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={(e) => setFilterAnchorEl(e.currentTarget)}
+            startIcon={<FilterListRoundedIcon fontSize="small" />}
+            sx={{
+              borderRadius: '8px',
+              borderColor: 'divider',
+              color: 'text.secondary',
+              fontSize: '13px',
+              fontWeight: 500,
+              bgcolor: 'background.default',
+              '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f1f5f9', borderColor: isDark ? '#475569' : '#cbd5e1' },
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Filter
+          </Button>
+          
+          <Popover
+            open={Boolean(filterAnchorEl)}
+            anchorEl={filterAnchorEl}
+            onClose={() => setFilterAnchorEl(null)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            PaperProps={{
+              sx: { mt: 1, p: 2, width: 240, borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', bgcolor: 'background.paper' }
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, color: 'text.primary' }}>Filter Tickets</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <FormControl size="small" fullWidth>
+                <InputLabel sx={{ fontSize: '13px' }}>Status</InputLabel>
+                <Select
+                  value={statusFilter}
+                  label="Status"
+                  onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                  sx={{ fontSize: '13px', borderRadius: '8px' }}
                 >
-                  Clear Filters
-                </Button>
-              </Box>
-            </Popover>
-          </Box>
+                  <MenuItem value="All">All Statuses</MenuItem>
+                  <MenuItem value="Open">Open</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="In Progress">In Progress</MenuItem>
+                  <MenuItem value="Closed">Closed</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl size="small" fullWidth>
+                <InputLabel sx={{ fontSize: '13px' }}>Agent</InputLabel>
+                <Select
+                  value={agentFilter}
+                  label="Agent"
+                  onChange={(e) => { setAgentFilter(e.target.value); setPage(1); }}
+                  sx={{ fontSize: '13px', borderRadius: '8px' }}
+                >
+                  <MenuItem value="All">All Agents</MenuItem>
+                  <MenuItem value="Chat Agent">Chat Agent</MenuItem>
+                  <MenuItem value="Voice Agent">Voice Agent</MenuItem>
+                  <MenuItem value="Email Agent">Email Agent</MenuItem>
+                  <MenuItem value="Human Agent">Human Agent</MenuItem>
+                </Select>
+              </FormControl>
+              <Button 
+                variant="text" 
+                size="small" 
+                onClick={() => { setStatusFilter('All'); setAgentFilter('All'); setPage(1); }}
+                sx={{ textTransform: 'none', fontWeight: 600, mt: 1 }}
+              >
+                Clear Filters
+              </Button>
+            </Box>
+          </Popover>
         </Box>
+      </Box>
 
       {/* Table */}
       <Box sx={{ p: { xs: 2, md: 3 }, flexGrow: 1 }}>
@@ -420,54 +411,52 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
           elevation={0}
           sx={{
             borderRadius: '12px',
-            border: '1px solid #e2e8f0',
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.paper',
             overflow: 'hidden',
           }}
         >
           <TableContainer sx={{ overflowX: 'auto' }}>
             <Table sx={{ minWidth: 800 }}>
               <TableHead>
-                <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Ticket ID</TableCell>
-                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Customer</TableCell>
-                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Subject & Intent</TableCell>
-                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Assigned Agent</TableCell>
-                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Status</TableCell>
-                  <TableCell align="right" sx={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Actions</TableCell>
+                <TableRow sx={{ bgcolor: 'background.default' }}>
+                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', borderBottomColor: 'divider' }}>Ticket ID</TableCell>
+                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', borderBottomColor: 'divider' }}>Customer</TableCell>
+                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', borderBottomColor: 'divider' }}>Subject & Intent</TableCell>
+                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', borderBottomColor: 'divider' }}>Assigned Agent</TableCell>
+                  <TableCell sx={{ fontSize: '11px', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', borderBottomColor: 'divider' }}>Status</TableCell>
+                  <TableCell align="right" sx={{ fontSize: '11px', fontWeight: 700, color: 'text.secondary', textTransform: 'uppercase', borderBottomColor: 'divider' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 6, borderBottomColor: 'divider' }}>
                       <CircularProgress size={24} sx={{ color: '#3b82f6' }} />
                     </TableCell>
                   </TableRow>
                 ) : paginatedTickets.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 6, color: '#94a3b8' }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary', borderBottomColor: 'divider' }}>
                       No tickets match your search.
                     </TableCell>
                   </TableRow>
                 ) : (
                   paginatedTickets.map((ticket) => {
                     const normalizedStatus = ticket.status.toLowerCase().replace(/\s+/g, '-');
-                    const statusCfg = STATUS_CONFIG[normalizedStatus] || {
-                      label: ticket.status,
-                      bg: '#f1f5f9',
-                      color: '#475569',
-                      icon: <SmartToyRoundedIcon sx={{ fontSize: 13 }} />,
-                    };
-                    const tierCfg = TIER_CONFIG[ticket.customer.tierType] || TIER_CONFIG['standard'];
+                    const statusCfg = getStatusConfig(normalizedStatus, isDark);
+                    const tierCfg = getTierConfig(ticket.customer.tierType, isDark);
+                    const agentColor = getAgentColor(ticket.agent.icon, isDark);
 
                     return (
-                      <TableRow key={ticket.id} sx={{ '&:hover': { bgcolor: '#f8fafc' } }}>
+                      <TableRow key={ticket.id} sx={{ '&:hover': { bgcolor: isDark ? 'rgba(255,255,255,0.05)' : '#f8fafc' } }}>
                         {/* Ticket ID */}
-                        <TableCell>
+                        <TableCell sx={{ borderBottomColor: 'divider' }}>
                           <Typography
                             onClick={() => onTicketClick && onTicketClick(ticket.customer, ticket.id)}
                             sx={{
-                              color: '#3b82f6',
+                              color: isDark ? '#60a5fa' : '#3b82f6',
                               fontWeight: 600,
                               fontSize: '13px',
                               cursor: 'pointer',
@@ -479,13 +468,13 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
                         </TableCell>
 
                         {/* Customer */}
-                        <TableCell>
+                        <TableCell sx={{ borderBottomColor: 'divider' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                             <Avatar
                               sx={{
                                 width: 32,
                                 height: 32,
-                                bgcolor: '#1d4ed8',
+                                bgcolor: isDark ? '#1e3a8a' : '#1d4ed8',
                                 fontSize: '11px',
                                 fontWeight: 700,
                               }}
@@ -501,7 +490,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
                                 sx={{ 
                                   fontSize: '13px', 
                                   fontWeight: 600, 
-                                  color: '#3b82f6', 
+                                  color: isDark ? '#60a5fa' : '#3b82f6', 
                                   cursor: 'pointer',
                                   '&:hover': { textDecoration: 'underline' }
                                 }}
@@ -525,8 +514,8 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
                         </TableCell>
 
                         {/* Subject & Intent */}
-                        <TableCell>
-                          <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', mb: 0.5 }}>
+                        <TableCell sx={{ borderBottomColor: 'divider' }}>
+                          <Typography sx={{ fontSize: '13px', fontWeight: 600, color: 'text.primary', mb: 0.5 }}>
                             {ticket.subject}
                           </Typography>
                           <Chip
@@ -536,9 +525,9 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
                               height: 20,
                               fontSize: '11px',
                               fontWeight: 500,
-                              bgcolor: ticket.intent.type === 'escalated' ? '#fff7ed' : '#f0f9ff',
-                              color: ticket.intent.type === 'escalated' ? '#c2410c' : '#0369a1',
-                              border: `1px solid ${ticket.intent.type === 'escalated' ? '#fed7aa' : '#bae6fd'}`,
+                              bgcolor: ticket.intent.type === 'escalated' ? (isDark ? 'rgba(194,65,12,0.1)' : '#fff7ed') : (isDark ? 'rgba(3,105,161,0.1)' : '#f0f9ff'),
+                              color: ticket.intent.type === 'escalated' ? (isDark ? '#fb923c' : '#c2410c') : (isDark ? '#38bdf8' : '#0369a1'),
+                              border: `1px solid ${ticket.intent.type === 'escalated' ? (isDark ? 'rgba(194,65,12,0.3)' : '#fed7aa') : (isDark ? 'rgba(3,105,161,0.3)' : '#bae6fd')}`,
                               '& .MuiChip-label': { px: 1 },
                             }}
                             variant="outlined"
@@ -546,25 +535,25 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
                         </TableCell>
 
                         {/* Assigned Agent */}
-                        <TableCell>
+                        <TableCell sx={{ borderBottomColor: 'divider' }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Box
                               sx={{
-                                color: AGENT_COLORS[ticket.agent.icon] || '#374151',
+                                color: agentColor,
                                 display: 'flex',
                                 alignItems: 'center',
                               }}
                             >
                               {AGENT_ICONS[ticket.agent.icon] || <PersonRoundedIcon sx={{ fontSize: 16 }} />}
                             </Box>
-                            <Typography sx={{ fontSize: '13px', color: '#374151' }}>
+                            <Typography sx={{ fontSize: '13px', color: agentColor }}>
                               {ticket.agent.name}
                             </Typography>
                           </Box>
                         </TableCell>
 
                         {/* Status */}
-                        <TableCell>
+                        <TableCell sx={{ borderBottomColor: 'divider' }}>
                           <Chip
                             icon={statusCfg.icon}
                             label={statusCfg.label}
@@ -582,7 +571,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
                         </TableCell>
 
                         {/* Actions */}
-                        <TableCell align="right">
+                        <TableCell align="right" sx={{ borderBottomColor: 'divider' }}>
                           <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 1 }}>
                             <ActionsMenu onViewDetails={() => handleViewDetails(ticket.id)} />
                           </Box>
@@ -600,13 +589,14 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
             sx={{
               px: 3,
               py: 1.5,
-              borderTop: '1px solid #f1f5f9',
+              borderTop: '1px solid',
+              borderColor: 'divider',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
             }}
           >
-            <Typography sx={{ fontSize: '12px', color: '#94a3b8' }}>
+            <Typography sx={{ fontSize: '12px', color: 'text.secondary' }}>
               Showing {paginatedTickets.length} of {filtered.length} tickets
             </Typography>
             <Box sx={{ display: 'flex', gap: 0.5 }}>
@@ -632,9 +622,9 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
         onClose={() => setDetailsModalOpen(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{ sx: { borderRadius: '12px' } }}
+        PaperProps={{ sx: { borderRadius: '12px', bgcolor: 'background.paper' } }}
       >
-        <DialogTitle sx={{ fontWeight: 800, fontSize: '16px', color: '#0f172a', borderBottom: '1px solid #e2e8f0' }}>
+        <DialogTitle sx={{ fontWeight: 800, fontSize: '16px', color: 'text.primary', borderBottom: '1px solid', borderColor: 'divider' }}>
           Ticket Details
         </DialogTitle>
         <DialogContent sx={{ p: 3 }}>
@@ -645,13 +635,13 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
           ) : selectedTicketDetails ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Ticket Number</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Ticket Number</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                   {selectedTicketDetails.ticket_number || selectedTicketDetails.ticket_no || 'N/A'}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Customer Name</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Customer Name</Typography>
                 <Typography 
                   variant="body2" 
                   onClick={() => {
@@ -675,7 +665,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
                   }}
                   sx={{ 
                     fontWeight: 700, 
-                    color: '#3b82f6', 
+                    color: isDark ? '#60a5fa' : '#3b82f6', 
                     cursor: 'pointer',
                     '&:hover': { textDecoration: 'underline' }
                   }}
@@ -688,32 +678,32 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Status</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Status</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                   {selectedTicketDetails.ticket_status || 'N/A'}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Customer Email</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Customer Email</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                   {selectedTicketDetails.customer_email || 'N/A'}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Customer ID</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Customer ID</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                   {selectedTicketDetails.cust_id || 'N/A'}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Communication Channel</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Communication Channel</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                   {selectedTicketDetails.communication_channel || 'N/A'}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>Created At</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Created At</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                   {selectedTicketDetails.created_at ? new Date(selectedTicketDetails.created_at).toLocaleString() : 'N/A'}
                 </Typography>
               </Box>
@@ -724,7 +714,7 @@ export default function TicketManagement({ onTicketClick, onCustomerClick }) {
             </Typography>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 2, borderTop: '1px solid #e2e8f0' }}>
+        <DialogActions sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
           <Button onClick={() => setDetailsModalOpen(false)} sx={{ textTransform: 'none', fontWeight: 600 }}>
             Close
           </Button>

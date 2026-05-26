@@ -1,22 +1,22 @@
 import { createTheme } from '@mui/material/styles';
 
-const theme = createTheme({
+export const getAppTheme = (mode) => createTheme({
   palette: {
-    mode: 'light',
+    mode,
     primary: {
       main: '#3b82f6',
       dark: '#2563eb',
       contrastText: '#fff',
     },
     background: {
-      default: '#f1f5f9',
-      paper: '#ffffff',
+      default: mode === 'dark' ? '#0f172a' : '#f1f5f9',
+      paper: mode === 'dark' ? '#1e293b' : '#ffffff',
     },
     text: {
-      primary: '#1e293b',
-      secondary: '#64748b',
+      primary: mode === 'dark' ? '#f8fafc' : '#1e293b',
+      secondary: mode === 'dark' ? '#94a3b8' : '#64748b',
     },
-    divider: '#e2e8f0',
+    divider: mode === 'dark' ? '#334155' : '#e2e8f0',
   },
   typography: {
     fontFamily: `system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`,
@@ -41,15 +41,15 @@ const theme = createTheme({
           fontSize: '11px',
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
-          color: '#94a3b8',
-          borderBottom: '1px solid #e2e8f0',
+          color: mode === 'dark' ? '#94a3b8' : '#94a3b8',
+          borderBottom: mode === 'dark' ? '1px solid #334155' : '1px solid #e2e8f0',
           padding: '12px 16px',
         },
         body: {
           padding: '16px',
-          borderBottom: '1px solid #f1f5f9',
+          borderBottom: mode === 'dark' ? '1px solid #1e293b' : '1px solid #f1f5f9',
           fontSize: '14px',
-          color: '#1e293b',
+          color: mode === 'dark' ? '#e2e8f0' : '#1e293b',
         },
       },
     },
@@ -57,7 +57,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&:hover': {
-            backgroundColor: '#f8fafc',
+            backgroundColor: mode === 'dark' ? '#334155' : '#f8fafc',
           },
           '&:last-child td': {
             borderBottom: 'none',
@@ -82,5 +82,3 @@ const theme = createTheme({
     },
   },
 });
-
-export default theme;

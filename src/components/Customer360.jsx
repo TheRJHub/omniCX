@@ -10,7 +10,8 @@ import {
   Tab,
   Divider,
   Button,
-  CircularProgress
+  CircularProgress,
+  useTheme
 } from '@mui/material';
 import { useState, useEffect } from 'react';
 import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
@@ -37,10 +38,8 @@ const transformInteractions = (data) => {
     const date = dateStr ? new Date(dateStr).toLocaleDateString() : 'Unknown Date';
     const agent = item.agent || item.handled_by || item.channel || 'System';
 
-    // Combine details safely
     let detailsStr = item.details || item.message || item.summary;
     if (!detailsStr) {
-      // Create a summary from other fields if standard ones are missing
       const otherKeys = Object.keys(item).filter(k => !['type', 'interaction_type', 'channel', 'date', 'created_at', 'timestamp', 'agent', 'handled_by', 'id'].includes(k));
       if (otherKeys.length > 0) {
         detailsStr = otherKeys.map(k => `${k}: ${item[k]}`).join(' | ');
@@ -70,9 +69,10 @@ export default function Customer360({ selectedCustomer }) {
   const [interactions, setInteractions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(3);
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   const defaultCustomer = {};
-
   const activeCustomer = selectedCustomer || defaultCustomer;
 
   const customerEmail = activeCustomer.email || 'N/A';
@@ -94,15 +94,13 @@ export default function Customer360({ selectedCustomer }) {
       }
       setLoading(true);
       try {
-        // Also check if phone is available and email is missing
         const identifier = customerEmail && customerEmail !== 'N/A'
           ? `email=${encodeURIComponent(customerEmail)}`
           : `phone=${encodeURIComponent(customerPhone)}`;
 
-        const response = await fetch(`${import.meta.env.OMNICX_URL}/interactions/history?${identifier}`);
+        const response = await fetch(`${import.meta.env.VITE_OMNICX_URL || import.meta.env.OMNICX_URL}/interactions/history?${identifier}`);
         const data = await response.json();
 
-        // The API returns { sessions: [...] }
         const interactionsArray = data.sessions || data.interactions || (Array.isArray(data) ? data : []);
         const transformed = transformInteractions(interactionsArray);
         setInteractions(transformed);
@@ -146,19 +144,19 @@ export default function Customer360({ selectedCustomer }) {
     <Box sx={{
       flexGrow: 1,
       p: { xs: 1.5, md: 3 },
-      bgcolor: '#f8fafc',
+      bgcolor: 'background.default',
       display: 'flex',
       flexDirection: 'column',
       gap: 3
     }}>
-      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: '#0f172a' }}>
+      <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: 'text.primary' }}>
         Customer 360 View
       </Typography>
 
       <Grid container spacing={3} sx={{ flexShrink: 0, flexWrap: 'nowrap' }}>
         {/* Profile Card */}
         <Grid item sx={{ flexBasis: '35%', maxWidth: '35%' }}>
-          <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%' }}>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', height: '100%' }}>
             <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
               <Avatar
                 sx={{
@@ -172,27 +170,27 @@ export default function Customer360({ selectedCustomer }) {
                 {customerInitials}
               </Avatar>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>{customerName}</Typography>
-                <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>{customerId}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>{customerName}</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>{customerId}</Typography>
               </Box>
             </Box>
 
             <Stack spacing={1.5} sx={{ mb: 4 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <EmailRoundedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>{customerEmail}</Typography>
+                <EmailRoundedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '13px' }}>{customerEmail}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <PhoneInTalkRoundedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>{customerPhone}</Typography>
+                <PhoneInTalkRoundedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '13px' }}>{customerPhone}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <LocationOnRoundedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>{customerLocation}</Typography>
+                <LocationOnRoundedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '13px' }}>{customerLocation}</Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <CalendarTodayRoundedIcon sx={{ fontSize: 16, color: '#94a3b8' }} />
-                <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>
+                <CalendarTodayRoundedIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '13px' }}>
                   {customerSince !== 'N/A' ? `Customer Since: ${customerSince}` : 'Customer Since: N/A'}
                 </Typography>
               </Box>
@@ -202,8 +200,8 @@ export default function Customer360({ selectedCustomer }) {
               label={customerTier !== 'N/A' ? `${customerTier} Tier` : 'N/A Tier'}
               size="small"
               sx={{
-                bgcolor: '#fef3c7',
-                color: '#b45309',
+                bgcolor: isDark ? 'rgba(217,119,6,0.15)' : '#fef3c7',
+                color: isDark ? '#fbbf24' : '#b45309',
                 fontWeight: 700,
                 borderRadius: '6px',
                 px: 1
@@ -214,31 +212,31 @@ export default function Customer360({ selectedCustomer }) {
 
         {/* Quick Stats Card */}
         <Grid item sx={{ flexBasis: '65%', maxWidth: '65%' }}>
-          <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid #e2e8f0', height: '100%' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 3, color: '#0f172a' }}>Quick Stats</Typography>
+          <Paper elevation={0} sx={{ p: 3, borderRadius: '12px', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper', height: '100%' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 3, color: 'text.primary' }}>Quick Stats</Typography>
             <Grid container spacing={4}>
               {dynamicStats.map((stat, idx) => (
                 <Grid item xs={4} key={idx}>
                   <Box sx={{ mb: 3 }}>
-                    <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 0.5, fontWeight: 500 }}>{stat.label1}</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, fontWeight: 500 }}>{stat.label1}</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a' }}>{stat.val1}</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary' }}>{stat.val1}</Typography>
                       {stat.icon}
                     </Box>
                   </Box>
                   <Box>
-                    <Typography variant="caption" sx={{ color: '#64748b', display: 'block', mb: 0.5, fontWeight: 500 }}>{stat.label2}</Typography>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 0.5, fontWeight: 500 }}>{stat.label2}</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                       <Typography
                         variant="body2"
                         sx={{
                           fontWeight: 700,
-                          color: stat.label2 === 'Risk Score' ? '#f59e0b' : '#0f172a'
+                          color: stat.label2 === 'Risk Score' ? (isDark ? '#fbbf24' : '#f59e0b') : 'text.primary'
                         }}
                       >
                         {stat.val2}
                       </Typography>
-                      {stat.info && <InfoOutlinedIcon sx={{ fontSize: 14, color: '#f59e0b' }} />}
+                      {stat.info && <InfoOutlinedIcon sx={{ fontSize: 14, color: isDark ? '#fbbf24' : '#f59e0b' }} />}
                     </Box>
                   </Box>
                 </Grid>
@@ -251,7 +249,7 @@ export default function Customer360({ selectedCustomer }) {
 
       {/* Tabs and Timeline */}
       <Box>
-        <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+        <Paper elevation={0} sx={{ borderRadius: '12px', border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
           <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
             <Tabs
               value={activeTab}
@@ -281,7 +279,7 @@ export default function Customer360({ selectedCustomer }) {
                     <CircularProgress size={32} sx={{ color: '#3b82f6' }} />
                   </Box>
                 ) : interactions.length === 0 ? (
-                  <Typography sx={{ textAlign: 'center', color: '#94a3b8', py: 4 }}>No interactions found.</Typography>
+                  <Typography sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }}>No interactions found.</Typography>
                 ) : interactions.slice(0, visibleCount).map((item, idx) => (
                   <Box key={idx} sx={{ display: 'flex', mb: 0, position: 'relative' }}>
                     {/* Timeline Line & Dot */}
@@ -297,7 +295,7 @@ export default function Customer360({ selectedCustomer }) {
                         }}
                       />
                       {idx !== interactions.length - 1 && (
-                        <Box sx={{ width: 1, bgcolor: '#e2e8f0', flexGrow: 1 }} />
+                        <Box sx={{ width: 1, bgcolor: isDark ? '#334155' : '#e2e8f0', flexGrow: 1 }} />
                       )}
                     </Box>
 
@@ -308,8 +306,9 @@ export default function Customer360({ selectedCustomer }) {
                         sx={{
                           p: 2,
                           borderRadius: '8px',
-                          bgcolor: '#f8fafc',
-                          border: '1px solid #f1f5f9',
+                          bgcolor: 'background.default',
+                          border: '1px solid',
+                          borderColor: 'divider',
                           position: 'relative'
                         }}
                       >
@@ -331,9 +330,9 @@ export default function Customer360({ selectedCustomer }) {
                               {item.type} - {item.agent}
                             </Typography>
                           </Stack>
-                          <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>{item.date}</Typography>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>{item.date}</Typography>
                         </Box>
-                        <Typography variant="body2" sx={{ color: '#475569', fontSize: '13px' }}>
+                        <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '13px' }}>
                           {item.details.split('|').map((part, pIdx) => {
                             const trimmedPart = part.trim();
                             let content;
@@ -347,7 +346,7 @@ export default function Customer360({ selectedCustomer }) {
                               const [key, ...rest] = trimmedPart.split(':');
                               content = (
                                 <Box component="span">
-                                  <Box component="span" sx={{ fontWeight: 700, color: '#0f172a' }}>{key}:</Box>
+                                  <Box component="span" sx={{ fontWeight: 700, color: 'text.primary' }}>{key}:</Box>
                                   {rest.join(':')}
                                 </Box>
                               );
@@ -356,7 +355,7 @@ export default function Customer360({ selectedCustomer }) {
                             }
                             return (
                               <Box component="span" key={pIdx}>
-                                {pIdx > 0 && <Box component="span" sx={{ mx: 0.5, color: '#94a3b8' }}>|</Box>}
+                                {pIdx > 0 && <Box component="span" sx={{ mx: 0.5, color: 'text.secondary' }}>|</Box>}
                                 {content}
                               </Box>
                             );
@@ -373,7 +372,7 @@ export default function Customer360({ selectedCustomer }) {
                       onClick={() => setVisibleCount(prev => prev + 5)}
                       sx={{
                         textTransform: 'none',
-                        color: '#3b82f6',
+                        color: isDark ? '#60a5fa' : '#3b82f6',
                         fontWeight: 600,
                         fontSize: '13px'
                       }}

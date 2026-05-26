@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   List,
@@ -19,6 +20,10 @@ import AccountTreeRoundedIcon from '@mui/icons-material/AccountTreeRounded';
 import ShowChartRoundedIcon from '@mui/icons-material/ShowChartRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import PeopleOutlineRoundedIcon from '@mui/icons-material/PeopleOutlineRounded';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import { useAuth } from '../Context/AuthContext';
+import { useThemeMode } from '../Context/ThemeContext';
+import { DarkModeRounded, LightModeRounded } from '@mui/icons-material';
 
 const NAV_ITEMS = [
   { id: 'agentic', label: 'Agentic Operations', icon: <GridViewRoundedIcon fontSize="small" /> },
@@ -34,7 +39,16 @@ const SIDEBAR_COLLAPSED = 64;
 
 export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCollapse }) {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { isDarkMode, toggleTheme } = useThemeMode();
+
   const width = collapsed ? SIDEBAR_COLLAPSED : SIDEBAR_WIDTH;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const handleLogoClick = () => {
     if (collapsed) {
@@ -76,10 +90,10 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCol
           borderBottom: '1px solid rgba(255,255,255,0.06)',
         }}
       >
-        <Box 
-          sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
             gap: 1.5,
             cursor: 'pointer',
             '&:hover': collapsed ? { '& .logo-box': { bgcolor: '#2563eb' } } : {},
@@ -108,7 +122,7 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCol
               sx={{
                 color: '#fff',
                 fontWeight: 700,
-                fontSize: '15px',
+                fontSize: '19px',
                 letterSpacing: '-0.3px',
                 whiteSpace: 'nowrap',
               }}
@@ -158,21 +172,21 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCol
                 position: 'relative',
                 '&::before': isActive
                   ? {
-                      content: '""',
-                      position: 'absolute',
-                      left: 0,
-                      top: '20%',
-                      height: '60%',
-                      width: '3px',
-                      borderRadius: '0 3px 3px 0',
-                      bgcolor: '#3b82f6',
-                    }
+                    content: '""',
+                    position: 'absolute',
+                    left: 0,
+                    top: '20%',
+                    height: '60%',
+                    width: '3px',
+                    borderRadius: '0 3px 3px 0',
+                    bgcolor: '#3b82f6',
+                  }
                   : {},
               }}
             >
               <ListItemIcon
                 sx={{
-                  color: isActive ? '#3b82f6' : '#6b7280',
+                  color: isActive ? '#3b82f6' : '#94a3b8',
                   minWidth: collapsed ? 0 : 36,
                   mr: collapsed ? 0 : 0,
                 }}
@@ -183,9 +197,9 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCol
                 <ListItemText
                   primary={item.label}
                   primaryTypographyProps={{
-                    fontSize: '13px',
+                    fontSize: '14.5px',
                     fontWeight: isActive ? 600 : 400,
-                    color: isActive ? '#fff' : '#9ca3af',
+                    color: isActive ? '#fff' : '#f8fafc',
                     whiteSpace: 'nowrap',
                   }}
                 />
@@ -203,6 +217,92 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCol
         })}
       </List>
 
+      {/* Theme Toggle */}
+      <List sx={{ px: collapsed ? 1 : 1.5, pb: 0 }} disablePadding>
+        {collapsed ? (
+          <Tooltip title={isDarkMode ? "Light Mode" : "Dark Mode"} placement="right">
+            <ListItemButton
+              onClick={toggleTheme}
+              sx={{
+                borderRadius: '8px',
+                px: 1.5,
+                py: 1,
+                mb: 0.5,
+                minHeight: 40,
+                justifyContent: 'center',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+              }}
+            >
+              <ListItemIcon sx={{ color: '#94a3b8', minWidth: 0 }}>
+                {isDarkMode ? <LightModeRounded fontSize="small" /> : <DarkModeRounded fontSize="small" />}
+              </ListItemIcon>
+            </ListItemButton>
+          </Tooltip>
+        ) : (
+          <ListItemButton
+            onClick={toggleTheme}
+            sx={{
+              borderRadius: '8px',
+              px: 1.5,
+              py: 1,
+              mb: 0.5,
+              minHeight: 40,
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+            }}
+          >
+            <ListItemIcon sx={{ color: '#94a3b8', minWidth: 36 }}>
+              {isDarkMode ? <LightModeRounded fontSize="small" /> : <DarkModeRounded fontSize="small" />}
+            </ListItemIcon>
+            <ListItemText
+              primary={isDarkMode ? "Light Mode" : "Dark Mode"}
+              primaryTypographyProps={{ fontSize: '14.5px', color: '#f8fafc' }}
+            />
+          </ListItemButton>
+        )}
+      </List>
+
+      {/* Logout */}
+      <List sx={{ px: collapsed ? 1 : 1.5, pb: 1 }} disablePadding>
+        {collapsed ? (
+          <Tooltip title="Logout" placement="right">
+            <ListItemButton
+              onClick={handleLogout}
+              sx={{
+                borderRadius: '8px',
+                px: 1.5,
+                py: 1,
+                minHeight: 40,
+                justifyContent: 'center',
+                '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+              }}
+            >
+              <ListItemIcon sx={{ color: '#6b7280', minWidth: 0 }}>
+                <LogoutRoundedIcon fontSize="small" />
+              </ListItemIcon>
+            </ListItemButton>
+          </Tooltip>
+        ) : (
+          <ListItemButton
+            onClick={handleLogout}
+            sx={{
+              borderRadius: '8px',
+              px: 1.5,
+              py: 1,
+              minHeight: 40,
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+            }}
+          >
+            <ListItemIcon sx={{ color: '#6b7280', minWidth: 36 }}>
+              <LogoutRoundedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Logout"
+              primaryTypographyProps={{ fontSize: '14.5px', color: '#f8fafc' }}
+            />
+          </ListItemButton>
+        )}
+      </List>
+
       {/* User Profile */}
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)' }} />
       <Box
@@ -212,29 +312,48 @@ export default function Sidebar({ activeNav, onNavChange, collapsed, onToggleCol
           gap: 1.5,
           px: collapsed ? 1.5 : 2,
           py: 2,
+          justifyContent: collapsed ? 'center' : 'flex-start',
         }}
       >
-        <Avatar
-          sx={{
-            width: 32,
-            height: 32,
-            bgcolor: '#1d4ed8',
-            fontSize: '12px',
-            fontWeight: 700,
-            flexShrink: 0,
-          }}
-        >
-          JD
-        </Avatar>
-        {!collapsed && (
-          <Box>
-            <Typography sx={{ color: '#fff', fontSize: '13px', fontWeight: 600, lineHeight: 1.3 }}>
-              Jane Doe
-            </Typography>
-            <Typography sx={{ color: '#6b7280', fontSize: '11px' }}>
-              CX Manager
-            </Typography>
-          </Box>
+        {collapsed ? (
+          <Tooltip title={`${user?.name || 'User'} · ${user?.role || 'Role'}`} placement="right">
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: '#1d4ed8',
+                fontSize: '12px',
+                fontWeight: 700,
+                flexShrink: 0,
+                cursor: 'pointer',
+              }}
+            >
+              {user?.avatar || 'U'}
+            </Avatar>
+          </Tooltip>
+        ) : (
+          <>
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: '#1d4ed8',
+                fontSize: '12px',
+                fontWeight: 700,
+                flexShrink: 0,
+              }}
+            >
+              {user?.avatar || 'U'}
+            </Avatar>
+            <Box sx={{ overflow: "hidden" }}>
+              <Typography sx={{ color: '#fff', fontSize: '13px', fontWeight: 600, lineHeight: 1.3 }} noWrap>
+                {user?.name || 'Jane Doe'}
+              </Typography>
+              <Typography sx={{ color: '#6b7280', fontSize: '11px' }} noWrap>
+                {user?.role || 'CX Manager'}
+              </Typography>
+            </Box>
+          </>
         )}
       </Box>
     </Box>

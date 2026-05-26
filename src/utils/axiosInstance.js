@@ -1,10 +1,14 @@
 import axios from "axios";
 
-export const INTELICONVOAPI = axios.create({
+const CSAAPI = axios.create({
   baseURL: import.meta.env.OMNICX_URL || "http://164.52.196.197:8099",
   headers: {
     "Content-Type": "application/json",
   },
+});
+
+const INTELICONVOAPI = axios.create({
+  baseURL: import.meta.env.VITE_API_INTELICONVO_URL,
 });
 
 INTELICONVOAPI.interceptors.request.use(
@@ -24,3 +28,5 @@ INTELICONVOAPI.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
+export { INTELICONVOAPI, CSAAPI };

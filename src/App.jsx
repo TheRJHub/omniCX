@@ -8,18 +8,20 @@ import {
   useMediaQuery,
   Drawer,
   Typography,
+  useTheme,
 } from '@mui/material';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
-import theme from './theme';
-import Sidebar from './Components/Sidebar';
-import TicketManagement from './Components/TicketManagement';
-import CustomerJourney from './Components/CustomerJourney';
-import Customer360 from './Components/Customer360';
-import AgenticOperations from './Components/AgenticOperations';
-import ChannelPerformance from './Components/ChannelPerformance';
-import AgentOrchestration from './Components/AgentOrchestration';
-import Login from './Components/Login';
+import { getAppTheme } from './theme';
+import { ThemeContextProvider, useThemeMode } from './Context/ThemeContext';
+import Sidebar from './components/Sidebar';
+import TicketManagement from './components/TicketManagement';
+import CustomerJourney from './components/CustomerJourney';
+import Customer360 from './components/Customer360';
+import AgenticOperations from './components/AgenticOperations';
+import ChannelPerformance from './components/ChannelPerformance';
+import AgentOrchestration from './components/AgentOrchestration';
 import { AuthProvider, useAuth } from './Context/AuthContext';
+import Login from './Components/login';
 
 const PAGE_LABELS = {
   agentic: 'Agentic Operations',
@@ -60,6 +62,7 @@ function ProtectedRoute({ children }) {
 function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
   const navigate = useNavigate();
@@ -73,7 +76,7 @@ function DashboardLayout() {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f1f5f9', width: '100%', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: 'background.default', width: '100%', overflow: 'hidden', transition: 'background-color 0.3s' }}>
       {/* Mobile Drawer */}
       {isMobile ? (
         <Drawer
@@ -109,14 +112,15 @@ function DashboardLayout() {
               gap: 1,
               px: 2,
               py: 1.5,
-              bgcolor: '#0d1117',
-              borderBottom: '1px solid rgba(255,255,255,0.06)',
+              bgcolor: 'background.paper',
+              borderBottom: '1px solid',
+              borderColor: 'divider',
             }}
           >
-            <IconButton onClick={() => setMobileOpen(true)} sx={{ color: '#fff' }}>
+            <IconButton onClick={() => setMobileOpen(true)} sx={{ color: 'text.primary' }}>
               <MenuRoundedIcon />
             </IconButton>
-            <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '15px' }}>
+            <Typography sx={{ color: 'text.primary', fontWeight: 700, fontSize: '15px' }}>
               OmniCX AI
             </Typography>
           </Box>
@@ -151,7 +155,7 @@ function AppRoutes() {
         path="/login"
         element={user ? <Navigate to="/tickets" replace /> : <Login />}
       />
-      
+
       <Route
         path="/"
         element={
@@ -173,7 +177,10 @@ function AppRoutes() {
   );
 }
 
-export default function App() {
+function ThemeWrapper() {
+  const { isDarkMode } = useThemeMode();
+  const theme = getAppTheme(isDarkMode ? 'dark' : 'light');
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -181,5 +188,13 @@ export default function App() {
         <AppRoutes />
       </AuthProvider>
     </ThemeProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeContextProvider>
+      <ThemeWrapper />
+    </ThemeContextProvider>
   );
 }
