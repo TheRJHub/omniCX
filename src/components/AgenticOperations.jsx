@@ -341,6 +341,7 @@ export default function AgenticOperations() {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '16px', md: '20px' }, color: '#0f172a' }}>
           Agentic Operations Dashboard
+          {loading && <CircularProgress size={16} sx={{ ml: 2 }} />}
         </Typography>
         <Chip
           icon={<AutoAwesomeRoundedIcon sx={{ fontSize: '14px !important', color: omniRouterActive ? '#3b82f6' : '#94a3b8' }} />}
@@ -356,6 +357,12 @@ export default function AgenticOperations() {
           }}
         />
       </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ borderRadius: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       {/* Stats Grid */}
       <Box

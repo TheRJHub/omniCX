@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import {
@@ -10,13 +11,15 @@ import {
 } from '@mui/material';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import theme from './theme';
-import Sidebar from './components/Sidebar';
-import TicketManagement from './components/TicketManagement';
-import CustomerJourney from './components/CustomerJourney';
-import Customer360 from './components/Customer360';
-import AgenticOperations from './components/AgenticOperations';
-import ChannelPerformance from './components/ChannelPerformance';
-import AgentOrchestration from './components/AgentOrchestration';
+import Sidebar from './Components/Sidebar';
+import TicketManagement from './Components/TicketManagement';
+import CustomerJourney from './Components/CustomerJourney';
+import Customer360 from './Components/Customer360';
+import AgenticOperations from './Components/AgenticOperations';
+import ChannelPerformance from './Components/ChannelPerformance';
+import AgentOrchestration from './Components/AgentOrchestration';
+import Login from './Components/Login';
+import { AuthProvider, useAuth } from './Context/AuthContext';
 
 const PAGE_LABELS = {
   agentic: 'Agentic Operations',
@@ -49,128 +52,134 @@ function PlaceholderPage({ label }) {
   );
 }
 
-export default function App() {
-  const [activeNav, setActiveNavState] = useState('tickets');
+function ProtectedRoute({ children }) {
+  const { user } = useAuth();
+  return user ? children : <Navigate to="/login" replace />;
+}
 
-  const [visited, setVisited] = useState(new Set(['tickets']));
-
-  const setActiveNav = (nav) => {
-    window.history.pushState({ activeNav: nav }, '', window.location.pathname);
-    setActiveNavState(nav);
-    setVisited((prev) => new Set(prev).add(nav));
-  };
-
-  useEffect(() => {
-    const handlePopState = (event) => {
-      if (event.state && event.state.activeNav) {
-        setActiveNavState(event.state.activeNav);
-        setVisited((prev) => new Set(prev).add(event.state.activeNav));
-      } else {
-        setActiveNavState('tickets');
-        setVisited((prev) => new Set(prev).add('tickets'));
-      }
-    };
-    
-    window.history.replaceState({ activeNav: 'tickets' }, '', window.location.pathname);
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
+function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Determine active nav from location pathname
+  const activeNav = location.pathname.split('/')[1] || 'tickets';
+
+  const handleNavChange = (nav) => {
+    navigate(`/${nav}`);
+    if (isMobile) setMobileOpen(false);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f1f5f9', width: '100%', overflow: 'hidden' }}>
+      {/* Mobile Drawer */}
+      {isMobile ? (
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          sx={{ '& .MuiDrawer-paper': { width: 260, bgcolor: 'transparent', border: 'none' } }}
+        >
+          <Sidebar
+            activeNav={activeNav}
+            onNavChange={handleNavChange}
+            collapsed={false}
+          />
+        </Drawer>
+      ) : (
+        <Sidebar
+          activeNav={activeNav}
+          onNavChange={handleNavChange}
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed(!collapsed)}
+        />
+      )}
+
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Mobile top bar */}
+        {isMobile && (
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              px: 2,
+              py: 1.5,
+              bgcolor: '#0d1117',
+              borderBottom: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            <IconButton onClick={() => setMobileOpen(true)} sx={{ color: '#fff' }}>
+              <MenuRoundedIcon />
+            </IconButton>
+            <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '15px' }}>
+              OmniCX AI
+            </Typography>
+          </Box>
+        )}
+
+        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0, display: 'flex', flexDirection: 'column' }}>
+          <Outlet />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+
+function AppRoutes() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
 
   const handleTicketClick = (customer, ticketId) => {
     setSelectedCustomer({ ...customer, activeTicketId: ticketId });
-    setActiveNav('journey');
+    navigate('/journey');
   };
 
   const handleCustomerClick = (customer) => {
     setSelectedCustomer(customer);
-    setActiveNav('customer360');
+    navigate('/customer360');
   };
 
   return (
+    <Routes>
+      <Route
+        path="/login"
+        element={user ? <Navigate to="/tickets" replace /> : <Login />}
+      />
+      
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/tickets" replace />} />
+        <Route path="tickets" element={<TicketManagement onTicketClick={handleTicketClick} onCustomerClick={handleCustomerClick} />} />
+        <Route path="agentic" element={<AgenticOperations />} />
+        <Route path="performance" element={<ChannelPerformance />} />
+        <Route path="journey" element={<CustomerJourney selectedCustomer={selectedCustomer} />} />
+        <Route path="customer360" element={<Customer360 selectedCustomer={selectedCustomer} />} />
+        <Route path="orchestration" element={<AgentOrchestration />} />
+        <Route path="*" element={<PlaceholderPage label="Page Not Found" />} />
+      </Route>
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f1f5f9', width: '100%', overflow: 'hidden' }}>
-        {/* Mobile Drawer */}
-        {isMobile ? (
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={() => setMobileOpen(false)}
-            ModalProps={{ keepMounted: true }}
-            sx={{ '& .MuiDrawer-paper': { width: 260, bgcolor: 'transparent', border: 'none' } }}
-          >
-            <Sidebar
-              activeNav={activeNav}
-              onNavChange={(id) => { setActiveNav(id); setMobileOpen(false); }}
-              collapsed={false}
-            />
-          </Drawer>
-        ) : (
-          <Sidebar
-            activeNav={activeNav}
-            onNavChange={setActiveNav}
-            collapsed={collapsed}
-            onToggleCollapse={() => setCollapsed(!collapsed)}
-          />
-        )}
-
-        {/* Main Content */}
-        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          {/* Mobile top bar */}
-          {isMobile && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                px: 2,
-                py: 1.5,
-                bgcolor: '#0d1117',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-              }}
-            >
-              <IconButton onClick={() => setMobileOpen(true)} sx={{ color: '#fff' }}>
-                <MenuRoundedIcon />
-              </IconButton>
-              <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: '15px' }}>
-                OmniCX AI
-              </Typography>
-            </Box>
-          )}
-
-          <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0, display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ display: activeNav === 'agentic' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
-              {visited.has('agentic') && <AgenticOperations />}
-            </Box>
-            <Box sx={{ display: activeNav === 'performance' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
-              {visited.has('performance') && <ChannelPerformance />}
-            </Box>
-            <Box sx={{ display: activeNav === 'tickets' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
-              {visited.has('tickets') && <TicketManagement onTicketClick={handleTicketClick} onCustomerClick={handleCustomerClick} />}
-            </Box>
-            <Box sx={{ display: activeNav === 'journey' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
-              {visited.has('journey') && <CustomerJourney selectedCustomer={selectedCustomer} />}
-            </Box>
-            <Box sx={{ display: activeNav === 'customer360' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
-              {visited.has('customer360') && <Customer360 selectedCustomer={selectedCustomer} />}
-            </Box>
-            <Box sx={{ display: activeNav === 'orchestration' ? 'flex' : 'none', flexDirection: 'column', flexGrow: 1 }}>
-              {visited.has('orchestration') && <AgentOrchestration />}
-            </Box>
-            {!['agentic', 'performance', 'tickets', 'journey', 'customer360', 'orchestration'].includes(activeNav) && (
-              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <PlaceholderPage label={PAGE_LABELS[activeNav]} />
-              </Box>
-            )}
-          </Box>
-        </Box>
-      </Box>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
